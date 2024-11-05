@@ -22,7 +22,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Build Docker image
-        run: docker build --build-arg VERSION_TAG=${{ github.event.release.tag_name }} -t espeto-hub/uvlhub:${{ github.event.release.tag_name }} -f docker/images/Dockerfile.prod .
+        run: docker build --build-arg VERSION_TAG=${{ github.event.release.tag_name }} -t ghcr.io/espeto-hub/uvlhub:${{ github.event.release.tag_name }} -f docker/images/Dockerfile.prod .
         env:
           DOCKER_CLI_EXPERIMENTAL: enabled
           
