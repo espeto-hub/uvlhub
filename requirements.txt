@@ -71,7 +71,7 @@ pytest-cov==5.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-sat==1.8.dev13
-pytz==2024.1
+pytz==2024.2
 pyzmq==26.0.3
 requests==2.32.3
 selenium==4.22.0
