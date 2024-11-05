@@ -13,25 +13,18 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-      
-      - name: Log in to GHCR
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+          
+      - name: Build and publish Docker Image to GitHub Container Registry
+        uses: TCPShield/gp-docker-action@65486288374aeae8705fc543405dc4d23de6060b
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        run: docker build --build-arg VERSION_TAG=${{ github.event.release.tag_name }} -t espeto-hub/uvlhub:${{ github.event.release.tag_name }} -f docker/images/Dockerfile.prod .
-        env:
-          DOCKER_CLI_EXPERIMENTAL: enabled
-
-      - name: Push Docker image to Docker Hub
-        run: docker push ghcr.io/espeto-hub/uvlhub:${{ github.event.release.tag_name }}
-
-      - name: Tag and push latest
-        run: |
-          docker tag ghcr.io/espeto-hub/uvlhub:${{ github.event.release.tag_name }} ghcr.io/espeto-hub/uvlhub:latest
-          docker push ghcr.io/espeto-hub/uvlhub:latest
-        env:
-          DOCKER_CLI_EXPERIMENTAL: enabled
+          # Github username to push Docker image from
+          github-username: ${{ github.actor }}
+          # GitHub token to push Docker image to GitHub Container Registry
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Docker Image tag
+          image-tag: ${{ github.event.release.tag_name }}
+          # Dockerfile name
+          dockerfile: docker/images/Dockerfile.prod
+          # Any additional docker build arguments as a string
+          custom-args: VERSION_TAG=${{ github.event.release.tag_name }}
+          
