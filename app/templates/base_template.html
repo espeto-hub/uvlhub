@@ -162,11 +162,15 @@ chico sundermann">
             <div class="navbar-collapse collapse">
                 <ul class="navbar-nav navbar-align">
                     <li class="nav-item dropdown">
+                        <a href="/dataset/download/all" class="nav-link d-none d-sm-inline-block" style="border-radius: 5px;">
+                            <i data-feather="download-cloud"></i>
+                            Download all dataset
+                        </a>
 
                         {% if current_user.is_anonymous %}
                             <a class="nav-link  d-none d-sm-inline-block" href="{{ url_for('auth.login') }}">Login</a>
                             <a class="nav-link  d-none d-sm-inline-block" href="{{ url_for('auth.show_signup_form') }}">Sign
-                                up</a>
+                                up</a>Options
 
                         {% else %}
 
