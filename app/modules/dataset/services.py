@@ -146,6 +146,7 @@ class DataSetService(BaseService):
         return f'http://{domain}/doi/{dataset.ds_meta_data.dataset_doi}'
 
     def zip_dataset(self, dataset: DataSet) -> str:
+        file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/"
         working_dir = os.getenv('WORKING_DIR', '')
         file_path = os.path.join(working_dir, "uploads", f"user_{dataset.user_id}", f"dataset_{dataset.id}")
         temp_dir = tempfile.mkdtemp()
