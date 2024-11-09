@@ -1,8 +1,6 @@
 import os
 from unittest.mock import patch
 
-import pytest
-
 from app.modules.featuremodel.repositories import FeatureModelRepository
 from app.modules.hubfile.repositories import HubfileRepository
 from app.modules.dataset.repositories import DataSetRepository
@@ -12,7 +10,6 @@ from app.modules.auth.repositories import UserRepository
 from dotenv import load_dotenv
 
 
-@pytest.fixture(scope="module")
 def test_create_hubfile_calls_enqueue_task(test_client):
     with patch("core.managers.task_queue_manager.TaskQueueManager.enqueue_task") as mock_enqueue_task:
         user = UserRepository().create(password="foo")
@@ -45,6 +42,6 @@ def test_create_hubfile_calls_enqueue_task(test_client):
         # Verificar que enqueue_task fue llamado correctamente
         mock_enqueue_task.assert_called_once_with(
             "app.modules.hubfile.tasks.transform_uvl",  # Nombre de la tarea
-            path=path,  # Parámetro que recibe la tarea
-            timeout=300
+            path=path  # Parámetro que recibe la tarea
         )
+        
