@@ -6,6 +6,7 @@ from flask_login import current_user
 from app.modules.hubfile import hubfile_bp
 from app.modules.hubfile.models import HubfileDownloadRecord, HubfileViewRecord
 from app.modules.hubfile.services import HubfileDownloadRecordService, HubfileService
+
 from app import db
 
 
