@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import logging
 import os
 
@@ -159,3 +160,12 @@ def calculate_checksum(file_path):
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+=======
+from app.modules.fakenodo.repositories import FakenodoRepository
+from core.services.BaseService import BaseService
+
+
+class FakenodoService(BaseService):
+    def __init__(self):
+        super().__init__(FakenodoRepository())
+>>>>>>> origin/fakenodo

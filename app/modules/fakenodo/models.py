@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from datetime import datetime
 from app import db
 
@@ -83,3 +84,13 @@ class DatasetFile(db.Model):
             "dataset_id": self.dataset_id,
             "created_at": self.created_at.isoformat()
         }
+=======
+from app import db
+
+
+class Fakenodo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)   
+
+    def __repr__(self):
+        return f'Fakenodo<{self.id}>'
+>>>>>>> origin/fakenodo
