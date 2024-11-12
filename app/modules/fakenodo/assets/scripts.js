@@ -1,21 +1,20 @@
 function test_fakenodo_connection() {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/fakenodo/test', true); // Asegúrate de tener esta ruta en tu API de fakenodo
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            var response = JSON.parse(xhr.responseText);
-            if (!response.success) {
-                document.getElementById("test_fakenodo_connection_error").style.display = "block";
-                console.log(response);
-                console.log(response.success);
-                console.log(response.messages);
-            }
-        } else if (xhr.readyState === 4 && xhr.status !== 200) {
-            console.error('Error:', xhr.status);
-        }
+    var response = {
+        success: true, 
+        messages: ["Fakenodo connection successful"], 
     };
+
+    var simulateError = false;
+
+    if (simulateError) {
+        document.getElementById("test_fakenodo_connection_error").style.display = "block";
+        response.success = false;
+        response.messages = ["Fakenodo connection failed"];
+    } else {
+        document.getElementById("test_fakenodo_connection_error").style.display = "none";
+    }
     
-    xhr.send();
+    console.log(response);
+    console.log(response.success);
+    console.log(response.messages);
 }

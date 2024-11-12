@@ -1,6 +1,7 @@
 from datetime import datetime
 from app import db
 
+
 class Dataset(db.Model):
     __tablename__ = 'fakenodo_datasets'
 
@@ -33,6 +34,7 @@ class Dataset(db.Model):
         """
         Convert the dataset object to a dictionary to be returned as JSON.
         """
+        
         return {
             "id": self.id,
             "title": self.title,
@@ -48,6 +50,7 @@ class Dataset(db.Model):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }
+
 
 class DatasetFile(db.Model):
     __tablename__ = 'fakenodo_dataset_files'
