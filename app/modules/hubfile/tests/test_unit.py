@@ -44,4 +44,3 @@ def test_create_hubfile_calls_enqueue_task(test_client):
             "app.modules.hubfile.tasks.transform_uvl",  # Nombre de la tarea
             path=path  # Parámetro que recibe la tarea
         )
-        

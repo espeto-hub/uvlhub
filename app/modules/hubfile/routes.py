@@ -4,37 +4,7 @@ import uuid
 from flask import current_app, jsonify, make_response, request, send_from_directory
 from flask_login import current_user
 from app.modules.hubfile import hubfile_bp
-from app.modules.hubfile.models import HubfileDownloadRecord, HubfileViewRecord
-from app.modules.hubfile.services import HubfileDownloadRecordService, HubfileService
-
 from app import db
-
-
-@hubfile_bp.route("/hubfile/download/<int:file_id>", methods=["GET"])
-def download_file(file_id):
-    hubfile = HubfileService().get_or_404(file_id)
-    user_owner = hubfile.get_owner_user()
-    filename = hubfile.name
-
-    directory_path = os.path.join(
-        "uploads",
-        f"user_{user_owner.id}",
-        f"dataset_{hubfile.feature_model.data_set_id}",
-        "uvl"
-    )
-
-    parent_directory_path = os.path.dirname(current_app.root_path)
-    file_path = os.path.join(parent_directory_path, directory_path)
-
-    user_cookie = hubfile_download_record_service.create_cookie(hubfile=hubfile)
-
-    resp = make_response(
-        send_from_directory(directory=file_path, path=filename, as_attachment=True)
-    )
-    resp.set_cookie("file_download_cookie", user_cookie)
-
-    return resp
-
 
 @hubfile_bp.route('/file/view/<int:file_id>', methods=['GET'])
 def view_file(file_id):
