@@ -11,7 +11,6 @@ from flask import (
     redirect,
     render_template,
     request,
-    send_file,
     jsonify,
     send_from_directory,
     make_response,
@@ -240,16 +239,6 @@ def download_dataset(dataset_id):
         )
 
     return resp
-
-
-@dataset_bp.route("/dataset/download/all", methods=["GET"])
-def download_all_dataset():
-    zip_path = dataset_service.zip_all_datasets()
-    # Obtener la fecha actual en el formato deseado (por ejemplo, YYYYMMDD)
-    current_date = datetime.now().strftime("%Y_%m_%d")
-    # Crear el nombre del archivo con la fecha
-    zip_filename = f"uvlhub_bulk_{current_date}.zip"
-    return send_file(zip_path, as_attachment=True, download_name=zip_filename)
 
 
 @dataset_bp.route("/doi/<path:doi>/", methods=["GET"])
