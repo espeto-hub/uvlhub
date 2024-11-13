@@ -139,6 +139,16 @@
 
                 </div>
                 {% endif %}
+                <div>
+                    <strong>Average rating:</strong>
+                    {% if dataset.get_average_rating() is not none %}
+                        {{ dataset.get_average_rating() | round(2) }} / 5
+                    {% else %}
+                        There are no ratings yet
+                    {% endif %}
+                </div>
+                
+                
                 <div class="row mb-2">
 
                     <div class="col-md-4 col-12">

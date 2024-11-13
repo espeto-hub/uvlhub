@@ -51,21 +51,30 @@ def create_dataset():
     form = DataSetForm()
     if request.method == "POST":
 
-        dataset = None
-
         if not form.validate_on_submit():
             return jsonify({"message": form.errors}), 400
 
         try:
             logger.info("Creating dataset...")
+            # Crear el dataset
             dataset = dataset_service.create_from_form(form=form, current_user=current_user)
             logger.info(f"Created dataset: {dataset}")
-            dataset_service.move_feature_models(dataset)
-        except Exception as exc:
-            logger.exception(f"Exception while create dataset data in local {exc}")
-            return jsonify({"Exception while create dataset data in local: ": str(exc)}), 400
 
-        # send dataset as deposition to Fakenodo
+            # Mover los feature models
+            dataset_service.move_feature_models(dataset)
+
+            # Crear el rating si se proporciona en el formulario
+            if form.rating.data:
+                rating = Rating(score=form.rating.data, dataset_id=dataset.id)
+                db.session.add(rating)
+                db.session.commit()
+                logger.info(f"Added rating: {rating} to dataset {dataset.id}")
+
+        except Exception as exc:
+            logger.exception(f"Exception while creating dataset data in local {exc}")
+            return jsonify({"Exception while creating dataset data in local: ": str(exc)}), 400
+
+        # Enviar el dataset a Fakenodo
         data = {}
         try:
             fakenodo_response_json = fakenodo_service.create_new_deposition(dataset)
@@ -74,35 +83,35 @@ def create_dataset():
         except Exception as exc:
             data = {}
             fakenodo_response_json = {}
-            logger.exception(f"Exception while create dataset data in Fakenodo {exc}")
+            logger.exception(f"Exception while creating dataset data in Fakenodo {exc}")
 
         if data.get("conceptrecid"):
             deposition_id = data.get("id")
 
-            # update dataset with deposition id in Fakenodo
+            # Actualizar dataset con el deposition ID en Fakenodo
             dataset_service.update_dsmetadata(dataset.ds_meta_data_id, deposition_id=deposition_id)
 
             try:
-                # iterate for each feature model (one feature model = one request to Fakenodo)
+                # Cargar cada modelo de características en Fakenodo
                 for feature_model in dataset.feature_models:
                     fakenodo_service.upload_file(dataset, deposition_id, feature_model)
 
-                # publish deposition
+                # Publicar la entrada
                 fakenodo_service.publish_deposition(deposition_id)
 
-                # update DOI
+                # Actualizar el DOI
                 deposition_doi = fakenodo_service.get_doi(deposition_id)
                 dataset_service.update_dsmetadata(dataset.ds_meta_data_id, dataset_doi=deposition_doi)
             except Exception as e:
-                msg = f"it has not been possible upload feature models in Fakenodo and update the DOI: {e}"
+                msg = f"Unable to upload feature models to Fakenodo and update DOI: {e}"
                 return jsonify({"message": msg}), 200
 
-        # Delete temp folder
+        # Borrar carpeta temporal
         file_path = current_user.temp_folder()
         if os.path.exists(file_path) and os.path.isdir(file_path):
             shutil.rmtree(file_path)
 
-        msg = "Everything works!"
+        msg = "Dataset created and rated successfully!"
         return jsonify({"message": msg}), 200
 
     return render_template("dataset/upload_dataset.html", form=form)
@@ -278,3 +287,5 @@ def get_unsynchronized_dataset(dataset_id):
         abort(404)
 
     return render_template("dataset/view_dataset.html", dataset=dataset)
+
+
