@@ -39,6 +39,6 @@ def publish_deposition(deposition_id):
 def get_deposition(deposition_id):
     response = {
         "status": "success", "message": "You have successfully retrieved a deposition in Fakenodo",
-        "doi": "10.5072/fakenodo.123456",
+        "doi": "10.1234/fakenodo.123456",
     }
     return make_response(jsonify(response), 200)
