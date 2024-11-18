@@ -84,6 +84,7 @@ def my_profile():
     )
 
 # Allows to go to the profile of the user selected
+# Allows to go to the profile of the user selected
 @profile_bp.route('/profile/<int:user_id>/', methods=["GET"])
 def user_profile(user_id):
     page = request.args.get('page', 1, type=int)
