@@ -37,6 +37,11 @@ jobs:
         pip install -r requirements.txt
         pip install -e ./
 
+    - name: Setup Chromedriver
+      uses: nanasess/setup-chromedriver@v2
+      with:
+        chromedriver-version: '130.0.6723.116'
+
     - name: Run Tests
       env:
         FLASK_ENV: testing
@@ -45,5 +50,6 @@ jobs:
         MARIADB_TEST_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
+        DISPLAY: 99
       run: |
-        rosemary test
+        rosemary selenium
