@@ -37,11 +37,6 @@ jobs:
         pip install -r requirements.txt
         pip install -e ./
 
-    - name: Setup Chromedriver
-      uses: nanasess/setup-chromedriver@v2
-
-    - uses: fawazahmed0/action-debug-vscode@main
-
     - name: Run Tests
       env:
         FLASK_ENV: testing
