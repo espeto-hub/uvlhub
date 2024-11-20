@@ -43,10 +43,10 @@ jobs:
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       run: |
-        pytest app/modules/ --ignore-glob='*selenium*' --cov=app/modules/
+        pytest app/modules/ --ignore-glob='*selenium*' --cov=app/modules/ --cov-report xml:cov.xml
 
     - name: Send coverage to Codacy
       uses: codacy/codacy-coverage-reporter-action@v1.3.0
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: .coverage
+        coverage-reports: cov.xml
