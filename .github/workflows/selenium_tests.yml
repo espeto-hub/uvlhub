@@ -49,5 +49,6 @@ jobs:
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
         DISPLAY: 99
+        HEADLESS: true
       run: |
         rosemary selenium

@@ -6,6 +6,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 def initialize_driver():
     # Initializes the browser options
     options = webdriver.ChromeOptions()
+    if os.getenv('HEADLESS', 'false').lower() == 'true':
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
 
     # Initialise the browser using WebDriver Manager
     service = Service(ChromeDriverManager().install())
