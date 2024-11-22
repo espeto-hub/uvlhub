@@ -16,14 +16,18 @@ from flask import (
     make_response,
     abort,
     url_for,
+    flash
 )
 from flask_login import login_required, current_user
 
+from app import db
 from app.modules.dataset.forms import DataSetForm
 from app.modules.dataset.models import (
     DSDownloadRecord
 )
 from app.modules.dataset import dataset_bp
+from app.modules.dataset.forms import RatingForm
+from app.modules.dataset.models import Rating, DataSet
 from app.modules.dataset.services import (
     AuthorService,
     DSDownloadRecordService,
@@ -62,13 +66,6 @@ def create_dataset():
 
             # Mover los feature models
             dataset_service.move_feature_models(dataset)
-
-            # Crear el rating si se proporciona en el formulario
-            if form.rating.data:
-                rating = Rating(score=form.rating.data, dataset_id=dataset.id)
-                db.session.add(rating)
-                db.session.commit()
-                logger.info(f"Added rating: {rating} to dataset {dataset.id}")
 
         except Exception as exc:
             logger.exception(f"Exception while creating dataset data in local {exc}")
@@ -289,3 +286,21 @@ def get_unsynchronized_dataset(dataset_id):
     return render_template("dataset/view_dataset.html", dataset=dataset)
 
 
+@dataset_bp.route("/dataset/<int:dataset_id>/rate", methods=["GET", "POST"])
+@login_required  # Asegura que el usuario esté logueado
+def rate_dataset(dataset_id):
+    form = RatingForm()  # Inicializamos el formulario de Rating
+    dataset = DataSet.query.get_or_404(dataset_id)  # Buscamos el dataset por ID
+
+    # Si el formulario es enviado y validado
+    if form.validate_on_submit():
+        # Creamos una nueva calificación para el dataseti8
+        rating = Rating(score=form.score.data, dataset_id=dataset.id)
+        db.session.add(rating)  # Añadimos la calificación a la base de datos
+        db.session.commit()  # Confirmamos los cambios en la base de datos
+
+        flash("Gracias por calificar el dataset!", "success")  # Mensaje de éxito
+        return redirect(url_for('dataset.detail', dataset_id=dataset.id))  # Redirigir al detalle del dataset
+
+    # Si no se envió el formulario, o si hay errores, renderizamos el formulario
+    return render_template("rate_dataset.html", form=form, dataset=dataset)

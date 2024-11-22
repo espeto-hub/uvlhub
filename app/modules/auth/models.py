@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import relationship
 
 from app import db
 
@@ -16,6 +17,8 @@ class User(db.Model, UserMixin):
     data_sets = db.relationship('DataSet', backref='user', lazy=True)
     profile = db.relationship('UserProfile', backref='user', uselist=False)
 
+
+    ratings = db.relationship('Rating', back_populates='user', cascade="all, delete-orphan")
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if 'password' in kwargs:
