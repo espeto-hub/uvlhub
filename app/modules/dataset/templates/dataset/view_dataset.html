@@ -139,30 +139,25 @@
 
                 </div>
                 {% endif %}
-                <div>
-                    <strong>Average rating:</strong>
-                    {% if dataset.get_average_rating() is not none %}
-                        {{ dataset.get_average_rating() | round(2) }} / 5
-                    {% else %}
-                        There are no ratings yet
-                    {% endif %}
-                </div>
-                
-                
                 <div class="row mb-2">
-
                     <div class="col-md-4 col-12">
-                        <span class=" text-secondary">
-                            Tags
+                        <span class="text-secondary">
+                            Average Rating
                         </span>
                     </div>
                     <div class="col-md-8 col-12">
-                        {% for tag in dataset.ds_meta_data.tags.split(',') %}
-                        <span class="badge bg-secondary">{{ tag.strip() }}</span>
-                        {% endfor %}
+                        {% if dataset.get_average_rating() is not none %}
+                            <p class="p-0 m-0">
+                                {{ dataset.get_average_rating() | round(2) }} / 5
+                            </p>
+                        {% else %}
+                            <p class="p-0 m-0">
+                                There are no ratings yet
+                            </p>
+                        {% endif %}
                     </div>
-
                 </div>
+                
 
                 
 
@@ -344,6 +339,7 @@
     
 </div>
 
+
 <!-- Modal-->
 <div class="modal fade" id="fileViewerModal" tabindex="-1" aria-labelledby="fileViewerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" style="height: 80vh; display: flex; align-items: center;">
@@ -503,5 +499,7 @@
         });
     }
 </script>
+
+
 
 {% endblock %}

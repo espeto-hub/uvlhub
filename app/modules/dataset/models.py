@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 
 from flask import request
+from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 from app import db
@@ -52,19 +53,35 @@ class Rating(db.Model):
     __tablename__ = 'dataset_ratings'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     score = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    dataset_id = db.Column(db.Integer, db.ForeignKey('data_set.id'), nullable=False)
     
-    # Relación con DataSet
+    dataset_id = db.Column(db.Integer, db.ForeignKey('data_set.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Relationships
     dataset = db.relationship('DataSet', back_populates='ratings')
-
+    user = db.relationship('User', back_populates='ratings')
+    
+    # Unique constraint for dataset-user pairs
+    __table_args__ = (
+        UniqueConstraint('dataset_id', 'user_id', name='uix_dataset_user'),
+    )
+    
     def __repr__(self):
-        return f'Rating<dataset_id={self.dataset_id}, score={self.score}>'
+        return f'<Rating dataset_id={self.dataset_id}, user_id={self.user_id}, score={self.score}>'
 
 # Modelo de dataset (con calificación agregada)
 class DataSet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'data_set'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    ds_meta_data_id = db.Column(db.Integer, db.ForeignKey('ds_meta_data.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    # Relationships
+    ds_meta_data = db.relationship('DSMetaData', backref=db.backref('data_set', uselist=False))
+    feature_models = db.relationship('FeatureModel', backref='data_set', lazy=True, cascade="all, delete")
+    ratings = db.relationship('Rating', back_populates='dataset', cascade="all, delete-orphan")
     
     def get_uvlhub_doi(self):
         from app.modules.dataset.services import DataSetService
@@ -82,18 +99,12 @@ class DataSet(db.Model):
         return sum(file.size for fm in self.feature_models for file in fm.files)
 
 
-    ds_meta_data_id = db.Column(db.Integer, db.ForeignKey('ds_meta_data.id'), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    ds_meta_data = db.relationship('DSMetaData', backref=db.backref('data_set', uselist=False))
-    feature_models = db.relationship('FeatureModel', backref='data_set', lazy=True, cascade="all, delete")
+    
     def get_cleaned_publication_type(self):
         return self.ds_meta_data.publication_type.name.replace('_', ' ').title()
 
 
-    # Relación con calificaciones
-    ratings = db.relationship('Rating', back_populates='dataset', cascade="all, delete-orphan")
-
+    
     # Método para obtener el promedio de calificación
     def get_average_rating(self):
         if not self.ratings:
