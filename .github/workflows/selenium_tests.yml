@@ -75,7 +75,7 @@ jobs:
         MARIADB_PASSWORD: uvlhub_password
       uses: JarvusInnovations/background-action@v1
       with:
-        run: flask run --host=0.0.0.0 --debug
+        run: flask run --host=0.0.0.0 --debug &
         wait-on: 'http://0.0.0.0:5000'
 
     - name: Waiting for system to start
