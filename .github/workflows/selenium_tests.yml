@@ -73,7 +73,9 @@ jobs:
         MARIADB_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
-      run: flask run --host=0.0.0.0 --debug &
+      uses: JarvusInnovations/background-action@v1
+      with:
+        run: flask run --host=0.0.0.0 --debug
 
     - name: Waiting for system to start
       run: sleep 10
