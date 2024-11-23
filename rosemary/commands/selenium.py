@@ -27,7 +27,7 @@ def selenium(module):
         """Run the Selenium tests."""
         if module:
             selenium_test_path = os.path.join(modules_dir, module, 'tests', 'test_selenium.py')
-            test_command = ['python', selenium_test_path]
+            selenium_test_paths = [selenium_test_path]
         else:
             selenium_test_paths = []
             for module in os.listdir(modules_dir):
@@ -35,10 +35,11 @@ def selenium(module):
                 selenium_test_path = os.path.join(tests_dir, 'test_selenium.py')
                 if os.path.exists(selenium_test_path):
                     selenium_test_paths.append(selenium_test_path)
-            test_command = ['python'] + selenium_test_paths
 
-        click.echo(f"Running Selenium tests with command: {' '.join(test_command)}")
-        subprocess.run(test_command, check=True)
+        for selenium_test_path in selenium_test_paths:
+            test_command = ['python', selenium_test_path]
+            click.echo(f"Running Selenium test with command: {' '.join(test_command)}")
+            subprocess.run(test_command, check=True)
 
     # Validate module if provided
     if module:
