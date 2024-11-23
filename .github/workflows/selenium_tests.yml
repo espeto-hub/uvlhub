@@ -55,11 +55,11 @@ jobs:
 
     - name: Run seeder
       env:
-        FLASK_ENV: testing
+        FLASK_ENV: development
         DOMAIN: localhost:5000
         MARIADB_HOSTNAME: localhost
         MARIADB_PORT: 3306
-        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       run: rosemary db:seed
@@ -81,10 +81,10 @@ jobs:
         
     - name: Run tests
       env:
-        FLASK_ENV: testing
+        FLASK_ENV: development
         MARIADB_HOSTNAME: 127.0.0.1
         MARIADB_PORT: 3306
-        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
         DISPLAY: 99
