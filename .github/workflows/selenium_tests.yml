@@ -42,22 +42,41 @@ jobs:
     - name: Setup Chromedriver
       uses: nanasess/setup-chromedriver@v2
 
+    - name: Run migrations
+      env:
+        FLASK_ENV: testing
+        DOMAIN: localhost:5000
+        MARIADB_HOSTNAME: localhost
+        MARIADB_PORT: 3306
+        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_USER: uvlhub_user
+        MARIADB_PASSWORD: uvlhub_password
+      run: flask db upgrade
+
+    - name: Run seeder
+      env:
+        FLASK_ENV: testing
+        DOMAIN: localhost:5000
+        MARIADB_HOSTNAME: localhost
+        MARIADB_PORT: 3306
+        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_USER: uvlhub_user
+        MARIADB_PASSWORD: uvlhub_password
+      run: rosemary db:seed
+
     - name: Run system
       uses: JarvusInnovations/background-action@v1
       env:
         FLASK_ENV: testing
-        MARIADB_HOSTNAME: 127.0.0.1
+        DOMAIN: localhost:5000
+        MARIADB_HOSTNAME: localhost
         MARIADB_PORT: 3306
         MARIADB_TEST_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       with:
-        run: |
-          flask db upgrade
-          rosemary db:seed
-          flask run --host=0.0.0.0 --debug
-        wait-on: |
-          http://localhost:5000
+        run: flask run --host=0.0.0.0 --debug
+        wait-on: 'http://localhost:5000'
         tail: true
         
     - name: Run tests
