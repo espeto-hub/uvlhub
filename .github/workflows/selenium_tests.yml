@@ -48,7 +48,7 @@ jobs:
         DOMAIN: localhost:5000
         MARIADB_HOSTNAME: localhost
         MARIADB_PORT: 3306
-        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       run: flask db upgrade
@@ -65,19 +65,18 @@ jobs:
       run: rosemary db:seed
 
     - name: Run system
-      uses: JarvusInnovations/background-action@v1
       env:
         FLASK_ENV: testing
         DOMAIN: localhost:5000
         MARIADB_HOSTNAME: localhost
         MARIADB_PORT: 3306
-        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
-      with:
-        run: flask run --host=0.0.0.0 --debug
-        wait-on: 'http://localhost:5000'
-        tail: true
+      run: flask run --host=0.0.0.0 --debug &
+
+    - name: Waiting for system to start
+      run: sleep 10
         
     - name: Run tests
       env:
