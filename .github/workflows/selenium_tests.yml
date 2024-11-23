@@ -44,6 +44,13 @@ jobs:
 
     - name: Run system
       uses: JarvusInnovations/background-action@v1
+      env:
+        FLASK_ENV: testing
+        MARIADB_HOSTNAME: 127.0.0.1
+        MARIADB_PORT: 3306
+        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_USER: uvlhub_user
+        MARIADB_PASSWORD: uvlhub_password
       with:
         run: |
           flask db upgrade
