@@ -27,9 +27,13 @@ jobs:
         EOF
 
     - name: Start containers
-      run: docker compose -f docker/docker-compose.dev.yml up -d 
+      run: docker compose -f docker/docker-compose.dev.yml up -d
 
-    - uses: actions/setup-python@v5
+    - name: Delete rosemary.egg-info
+      run: rm -rf rosemary.egg-info
+
+    - name: Setup local Python
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
         cache: 'pip'
