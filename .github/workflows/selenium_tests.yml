@@ -49,7 +49,7 @@ jobs:
           flask db upgrade
           rosemary db:seed
           flask run --host=0.0.0.0 --debug
-        wait_on: |
+        wait-on: |
           http://localhost:5000
         tail: true
         
