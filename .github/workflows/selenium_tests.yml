@@ -48,7 +48,7 @@ jobs:
         DOMAIN: localhost:5000
         MARIADB_HOSTNAME: localhost
         MARIADB_PORT: 3306
-        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       run: flask db upgrade
@@ -71,7 +71,7 @@ jobs:
         DOMAIN: localhost:5000
         MARIADB_HOSTNAME: localhost
         MARIADB_PORT: 3306
-        MARIADB_TEST_DATABASE: uvlhubdb_test
+        MARIADB_DATABASE: uvlhubdb_test
         MARIADB_USER: uvlhub_user
         MARIADB_PASSWORD: uvlhub_password
       with:
