@@ -19,6 +19,16 @@ jobs:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
+    env:
+      FLASK_ENV: development
+      DOMAIN: localhost:5000
+      MARIADB_HOSTNAME: localhost
+      MARIADB_PORT: 3306
+      MARIADB_DATABASE: uvlhubdb_test
+      MARIADB_USER: uvlhub_user
+      MARIADB_PASSWORD: uvlhub_password
+      WORKING_DIR: ""
+      
     steps:
     - uses: actions/checkout@v4
 
@@ -43,53 +53,18 @@ jobs:
       uses: nanasess/setup-chromedriver@v2
 
     - name: Run migrations
-      env:
-        FLASK_ENV: testing
-        DOMAIN: localhost:5000
-        MARIADB_HOSTNAME: localhost
-        MARIADB_PORT: 3306
-        MARIADB_DATABASE: uvlhubdb_test
-        MARIADB_USER: uvlhub_user
-        MARIADB_PASSWORD: uvlhub_password
       run: flask db upgrade
 
     - name: Run seeder
-      env:
-        FLASK_ENV: development
-        DOMAIN: localhost:5000
-        MARIADB_HOSTNAME: localhost
-        MARIADB_PORT: 3306
-        MARIADB_DATABASE: uvlhubdb_test
-        MARIADB_USER: uvlhub_user
-        MARIADB_PASSWORD: uvlhub_password
       run: rosemary db:seed
 
     - name: Run system
-      env:
-        FLASK_ENV: testing
-        DOMAIN: localhost:5000
-        MARIADB_HOSTNAME: localhost
-        MARIADB_PORT: 3306
-        MARIADB_DATABASE: uvlhubdb_test
-        MARIADB_USER: uvlhub_user
-        MARIADB_PASSWORD: uvlhub_password
       uses: JarvusInnovations/background-action@v1
       with:
         run: flask run --host=0.0.0.0 --debug &
         wait-on: 'http://0.0.0.0:5000'
-
-    - name: Waiting for system to start
-      run: sleep 10
         
     - name: Run tests
       env:
-        FLASK_ENV: development
-        MARIADB_HOSTNAME: 127.0.0.1
-        MARIADB_PORT: 3306
-        MARIADB_DATABASE: uvlhubdb_test
-        MARIADB_USER: uvlhub_user
-        MARIADB_PASSWORD: uvlhub_password
-        DISPLAY: 99
         HEADLESS: true
-      run: |
-        rosemary selenium
+      run: rosemary selenium
