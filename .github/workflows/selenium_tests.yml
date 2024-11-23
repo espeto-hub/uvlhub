@@ -7,20 +7,27 @@ jobs:
   selenium:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: uvlhub_root_password
-          MYSQL_DATABASE: uvlhubdb_test
-          MYSQL_USER: uvlhub_user
-          MYSQL_PASSWORD: uvlhub_password
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
     - uses: actions/checkout@v4
+
+    - name: Create .env file
+      run: |
+        cat <<EOF > .env
+        FLASK_APP_NAME="UVLHUB.IO(dev)"
+        FLASK_ENV=development
+        DOMAIN=localhost
+        MARIADB_HOSTNAME=db
+        MARIADB_PORT=3306
+        MARIADB_DATABASE=uvlhubdb
+        MARIADB_TEST_DATABASE=uvlhubdb_test
+        MARIADB_USER=uvlhubdb_user
+        MARIADB_PASSWORD=uvlhubdb_password
+        MARIADB_ROOT_PASSWORD=uvlhubdb_root_password
+        WORKING_DIR=/app/
+        EOF
+
+    - name: Start containers
+      run: docker compose -f docker/docker-compose.dev.yml up -d 
 
     - uses: actions/setup-python@v5
       with:
@@ -39,6 +46,9 @@ jobs:
         
     - name: Setup Chromedriver
       uses: nanasess/setup-chromedriver@v2
+
+    - name: Check running containers
+      run: docker ps
 
     - name: Run Tests
       env:
