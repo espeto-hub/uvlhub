@@ -50,7 +50,7 @@ jobs:
         pip install -e ./
         
     - name: Setup Chromedriver
-      uses: nanasess/setup-chromedriver@v2
+      uses: nanasess/setup-chromedriver@42cc2998329f041de87dc3cfa33a930eacd57eaa
 
     - name: Run migrations
       run: flask db upgrade
@@ -59,7 +59,7 @@ jobs:
       run: rosemary db:seed
 
     - name: Run system
-      uses: JarvusInnovations/background-action@v1
+      uses: JarvusInnovations/background-action@2428e7b970a846423095c79d43f759abf979a635
       with:
         run: flask run --host=0.0.0.0 --debug &
         wait-on: 'http://0.0.0.0:5000'
