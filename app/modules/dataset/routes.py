@@ -108,7 +108,7 @@ def create_dataset():
         if os.path.exists(file_path) and os.path.isdir(file_path):
             shutil.rmtree(file_path)
 
-        msg = "Dataset created and rated successfully!"
+        msg = "Dataset created successfully!"
         return jsonify({"message": msg}), 200
 
     return render_template("dataset/upload_dataset.html", form=form)
@@ -184,51 +184,36 @@ def delete():
 
 @dataset_bp.route("/dataset/download/<int:dataset_id>", methods=["GET"])
 def download_dataset(dataset_id):
-    dataset = dataset_service.get_or_404(dataset_id)
+    dataset = dataset_service.get_or_404(dataset_id)  # Obtiene el dataset
+    form = RatingForm()  # Inicializa el formulario para la calificación
 
     file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/"
-
     temp_dir = tempfile.mkdtemp()
     zip_path = os.path.join(temp_dir, f"dataset_{dataset_id}.zip")
 
+    # Crear el archivo ZIP con los datos del dataset
     with ZipFile(zip_path, "w") as zipf:
         for subdir, dirs, files in os.walk(file_path):
             for file in files:
                 full_path = os.path.join(subdir, file)
-
                 relative_path = os.path.relpath(full_path, file_path)
-
                 zipf.write(
                     full_path,
-                    arcname=os.path.join(
-                        os.path.basename(zip_path[:-4]), relative_path
-                    ),
+                    arcname=os.path.join(os.path.basename(zip_path[:-4]), relative_path),
                 )
 
+    # Lógica para manejar las cookies y registros de descarga
     user_cookie = request.cookies.get("download_cookie")
     if not user_cookie:
-        user_cookie = str(
-            uuid.uuid4()
-        )  # Generate a new unique identifier if it does not exist
-        # Save the cookie to the user's browser
+        user_cookie = str(uuid.uuid4())
         resp = make_response(
-            send_from_directory(
-                temp_dir,
-                f"dataset_{dataset_id}.zip",
-                as_attachment=True,
-                mimetype="application/zip",
-            )
+            send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip")
         )
         resp.set_cookie("download_cookie", user_cookie)
     else:
-        resp = send_from_directory(
-            temp_dir,
-            f"dataset_{dataset_id}.zip",
-            as_attachment=True,
-            mimetype="application/zip",
-        )
+        resp = send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip")
 
-    # Check if the download record already exists for this cookie
+    # Comprobar si ya existe un registro de descarga para este usuario y dataset
     existing_record = DSDownloadRecord.query.filter_by(
         user_id=current_user.id if current_user.is_authenticated else None,
         dataset_id=dataset_id,
@@ -236,7 +221,7 @@ def download_dataset(dataset_id):
     ).first()
 
     if not existing_record:
-        # Record the download in your database
+        # Si no existe, crear un nuevo registro de descarga
         DSDownloadRecordService().create(
             user_id=current_user.id if current_user.is_authenticated else None,
             dataset_id=dataset_id,
@@ -244,7 +229,8 @@ def download_dataset(dataset_id):
             download_cookie=user_cookie,
         )
 
-    return resp
+    # Redirigir a la vista del dataset con el formulario de calificación
+    return render_template("view_dataset.html", form=form, dataset=dataset)
 
 
 @dataset_bp.route("/doi/<path:doi>/", methods=["GET"])
@@ -287,20 +273,19 @@ def get_unsynchronized_dataset(dataset_id):
 
 
 @dataset_bp.route("/dataset/<int:dataset_id>/rate", methods=["GET", "POST"])
-@login_required  # Asegura que el usuario esté logueado
+@login_required
 def rate_dataset(dataset_id):
     form = RatingForm()  # Inicializamos el formulario de Rating
     dataset = DataSet.query.get_or_404(dataset_id)  # Buscamos el dataset por ID
 
-    # Si el formulario es enviado y validado
     if form.validate_on_submit():
-        # Creamos una nueva calificación para el dataseti8
+        # Creamos una nueva calificación para el dataset
         rating = Rating(score=form.score.data, dataset_id=dataset.id)
         db.session.add(rating)  # Añadimos la calificación a la base de datos
         db.session.commit()  # Confirmamos los cambios en la base de datos
 
         flash("Gracias por calificar el dataset!", "success")  # Mensaje de éxito
-        return redirect(url_for('dataset.detail', dataset_id=dataset.id))  # Redirigir al detalle del dataset
+        return redirect(url_for('dataset.view_dataset', dataset_id=dataset.id))  # Redirigir al detalle del dataset
 
-    # Si no se envió el formulario, o si hay errores, renderizamos el formulario
-    return render_template("rate_dataset.html", form=form, dataset=dataset)
+    # Aquí renderizamos la plantilla, asegurándonos de pasar 'form' a la plantilla
+    return render_template("dataset/view_dataset.html", form=form, dataset=dataset)
