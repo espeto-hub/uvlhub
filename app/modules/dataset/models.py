@@ -86,7 +86,7 @@ class DataSet(db.Model):
 
     def is_synchronized(self) -> bool:
         from app.modules.dataset.services import DataSetService
-        return DataSetService.is_synchronized(self.id)
+        return DataSetService.is_synchronized(dataset_id=self.id)
 
     def delete(self):
         db.session.delete(self)
