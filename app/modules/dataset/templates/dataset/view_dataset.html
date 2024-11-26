@@ -19,14 +19,11 @@
 {% block content %}
 
 
-
- 
 <div class="d-flex justify-content-end"> 
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ratingModal">
         Rate Dataset
     </button>
 </div>
-
 
 <!-- Modal -->
 <!-- Modal para calificar el dataset -->
@@ -39,12 +36,14 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+            <!-- Formulario con CSRF Token -->
             <form method="POST" action="{{ url_for('dataset.rate_dataset', dataset_id=dataset.id) }}">
+                {{ form.hidden_tag() }} <!-- CSRF Token -->
                 <div class="modal-body">
-                    <!-- Sin CSRF Token -->
+                    <!-- Formulario de calificación -->
                     <div class="form-group">
-                        
-                        <div class="rating text-center"> 
+                        <div class="rating text-center">
+                            <!-- Estrellas para seleccionar la calificación -->
                             <i class="fa fa-star fa-3x star" data-score="1"></i> <!-- Star 1 -->
                             <i class="fa fa-star fa-3x star" data-score="2"></i> <!-- Star 2 -->
                             <i class="fa fa-star fa-3x star" data-score="3"></i> <!-- Star 3 -->
@@ -69,7 +68,7 @@
         const stars = document.querySelectorAll('.star');
         const ratingInput = document.getElementById('rating');
 
-        // Función para actualizar las estrellas
+        // Función para actualizar las estrellas visualmente
         function updateStars(selectedScore) {
             stars.forEach(star => {
                 if (parseInt(star.getAttribute('data-score')) <= selectedScore) {
@@ -78,6 +77,12 @@
                     star.classList.remove('text-warning'); // Quitar color amarillo (estrellas inactivas)
                 }
             });
+        }
+
+        // Inicializar estrellas con la calificación previa si existe
+        const initialRating = ratingInput.value ? parseInt(ratingInput.value) : 0;
+        if (initialRating) {
+            updateStars(initialRating);
         }
 
         // Función para manejar el clic en las estrellas
@@ -90,6 +95,7 @@
         });
     });
 </script>
+
 
 
 <!-- CSS de Bootstrap -->
