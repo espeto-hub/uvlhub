@@ -1,7 +1,7 @@
+from flask import abort, redirect, render_template, request, url_for
 from app.modules.auth.models import User
 from app.modules.auth.services import AuthenticationService
 from app.modules.dataset.models import DataSet
-from flask import render_template, redirect, url_for, request, app, abort
 from flask_login import login_required, current_user
 
 from app import db
@@ -40,8 +40,6 @@ def my_profile():
         .order_by(DataSet.created_at.desc()) \
         .paginate(page=page, per_page=per_page, error_out=False)
 
-
-
     total_datasets_count = db.session.query(DataSet) \
         .filter(DataSet.user_id == current_user.id) \
         .count()
@@ -57,34 +55,10 @@ def my_profile():
          total_datasets=total_datasets_count
     )
 
-def my_profile():
-    page = request.args.get('page', 1, type=int)
-    per_page = 5
-
-    user_datasets_pagination = db.session.query(DataSet) \
-        .filter(DataSet.user_id == current_user.id) \
-        .order_by(DataSet.created_at.desc()) \
-        .paginate(page=page, per_page=per_page, error_out=False)
-
-
-
-    total_datasets_count = db.session.query(DataSet) \
-        .filter(DataSet.user_id == current_user.id) \
-        .count()
-
-    print(user_datasets_pagination.items)
-
-    return render_template(
-        'profile/summary.html',
-        user_profile=current_user.profile,
-        user=current_user,
-        datasets=user_datasets_pagination.items,
-        pagination=user_datasets_pagination,
-        total_datasets=total_datasets_count
-    )
-
 # Allows to go to the profile of the user selected
 # Allows to go to the profile of the user selected
+
+
 @profile_bp.route('/profile/<int:user_id>/', methods=["GET"])
 def user_profile(user_id):
     page = request.args.get('page', 1, type=int)
@@ -113,4 +87,3 @@ def user_profile(user_id):
         pagination=user_datasets_pagination,
         total_datasets=total_datasets_count
     )
-

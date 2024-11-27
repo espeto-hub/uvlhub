@@ -1,4 +1,4 @@
-2024-11-12 11:42:23,171 - app - ERROR - Exception on /doi/10.1234/dataset4/ [GET]
+2024-11-12 11:52:00,310 - app - ERROR - Exception on /doi/10.1234/dataset4/ [GET]
 Traceback (most recent call last):
   File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
     response = self.full_dispatch_request()
@@ -35,7 +35,7 @@ Traceback (most recent call last):
     {% block content %}{% endblock %}
     ^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/dataset/templates/dataset/view_dataset.html", line 67, in block 'content'
-    <a href="{{ url_for('datset.user.profile') }}">{{ dataset.user.profile.surname }}, {{ dataset.user.profile.name }}</a>
+    <a href="{{ url_for('user_profile', user_id=dataset.user.id) }}">{{ dataset.user.profile.surname }}, {{ dataset.user.profile.name }}</a>
     ^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1084, in url_for
     return self.handle_url_build_error(error, endpoint, values)
@@ -45,9 +45,9 @@ Traceback (most recent call last):
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 924, in build
     raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'datset.user.profile'. Did you mean 'dataset.upload' instead?
-2024-11-12 11:42:23,174 - app - ERROR - Internal Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
-2024-11-12 11:42:24,768 - app - ERROR - Exception on /doi/10.1234/dataset3/ [GET]
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'user_profile' with values ['user_id']. Did you mean 'profile.user_profile' instead?
+2024-11-12 11:52:00,313 - app - ERROR - Internal Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+2024-11-24 20:17:23,732 - app - ERROR - Exception on /profile/2/ [GET]
 Traceback (most recent call last):
   File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
     response = self.full_dispatch_request()
@@ -64,35 +64,69 @@ Traceback (most recent call last):
   File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/dataset/routes.py", line 264, in subdomain_index
-    resp = make_response(render_template("dataset/view_dataset.html", dataset=dataset))
-                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/templating.py", line 150, in render_template
-    return _render(app, template, context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/templating.py", line 131, in _render
-    rv = template.render(context)
-         ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/jinja2/environment.py", line 1304, in render
-    self.environment.handle_exception()
-  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/jinja2/environment.py", line 939, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/dataset/templates/dataset/view_dataset.html", line 1, in top-level template code
-    {% extends "base_template.html" %}
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/app/templates/base_template.html", line 200, in top-level template code
-    {% block content %}{% endblock %}
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/dataset/templates/dataset/view_dataset.html", line 67, in block 'content'
-    <a href="{{ url_for('datset.user.profile') }}">{{ dataset.user.profile.surname }}, {{ dataset.user.profile.name }}</a>
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1084, in url_for
-    return self.handle_url_build_error(error, endpoint, values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1073, in url_for
-    rv = url_adapter.build(  # type: ignore[union-attr]
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/werkzeug/routing/map.py", line 924, in build
-    raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'datset.user.profile'. Did you mean 'dataset.upload' instead?
-2024-11-12 11:42:24,770 - app - ERROR - Internal Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+  File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/profile/routes.py", line 91, in user_profile
+    page = request.args.get('page', 1, type=int)
+           ^^^^^^^
+NameError: name 'request' is not defined
+2024-11-24 20:17:23,736 - app - ERROR - Internal Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+2024-11-24 20:17:30,360 - app - ERROR - Exception on /profile/2/ [GET]
+Traceback (most recent call last):
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask_restful/__init__.py", line 298, in error_router
+    return original_handler(e)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/profile/routes.py", line 91, in user_profile
+    page = request.args.get('page', 1, type=int)
+           ^^^^^^^
+NameError: name 'request' is not defined
+2024-11-24 20:17:30,363 - app - ERROR - Internal Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+2024-11-24 20:20:45,147 - app - ERROR - Exception on /profile/2/ [GET]
+Traceback (most recent call last):
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask_restful/__init__.py", line 298, in error_router
+    return original_handler(e)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/profile/routes.py", line 91, in user_profile
+NameError: name 'request' is not defined
+2024-11-24 20:20:45,149 - app - ERROR - Internal Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+2024-11-24 20:20:48,397 - app - ERROR - Exception on /profile/2/ [GET]
+Traceback (most recent call last):
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask_restful/__init__.py", line 298, in error_router
+    return original_handler(e)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/venv/lib/python3.12/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gonzalo/IdeaProjects/uvlhub/app/modules/profile/routes.py", line 91, in user_profile
+NameError: name 'request' is not defined
