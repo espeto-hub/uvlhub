@@ -1,7 +1,7 @@
+from flask import abort, redirect, render_template, request, url_for
 from app.modules.auth.models import User
 from app.modules.auth.services import AuthenticationService
 from app.modules.dataset.models import DataSet
-from flask import render_template, redirect, url_for, request, abort
 from flask_login import login_required, current_user
 
 from app import db
@@ -86,4 +86,3 @@ def user_profile(user_id):
         pagination=user_datasets_pagination,
         total_datasets=total_datasets_count
     )
-
