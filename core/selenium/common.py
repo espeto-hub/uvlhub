@@ -1,15 +1,12 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+# from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 
 def initialize_driver():
-    # Initializes the browser options
     options = webdriver.ChromeOptions()
-
-    # Initialise the browser using WebDriver Manager
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    options.add_argument('--headless')  # Optional: to run in headless mode
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     return driver
 
 
