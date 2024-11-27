@@ -4,7 +4,7 @@
 - Castillejo Vela, Manuel
 - Domínguez Moreno, Jose Gonzalo
 - Gálvez López, Juan Pedro
-- Pérez Lázaro, Fancisco
+- Pérez Lázaro, Francisco
 - Rodriguez Millán, Maria C.
 
 ## Resumen de total de reuniones empleadas en el equipo
@@ -29,3 +29,21 @@ Total de tiempo empleado en reuniones virtuales: 1h 0m
 - Selección de último WI
 - Creación de issues
 - Asignación de issues a miembros del equipo
+
+### 2024-11-19
+
+#### Asistentes
+
+- Castillejo Vela, Manuel
+- Domínguez Moreno, Jose Gonzalo
+- Gálvez López, Juan Pedro
+- Pérez Lázaro, Francisco
+- Rodriguez Millán, Maria C.
+
+#### Acuerdos tomados
+
+- Manu -> Rate datasets
+- Francisco -> Documentación y fix test
+- Gonzalo -> User profile tests
+- Juan Pedro -> Codacy y empezar bot integration
+- María -> Tests Selenium fakenodo
