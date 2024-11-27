@@ -10,24 +10,37 @@ from app.modules.hubfile.services import HubfileDownloadRecordService, HubfileSe
 from app import db
 
 
-@hubfile_bp.route("/hubfile/download/<int:file_id>", methods=["GET"])
+@hubfile_bp.route("/file/download/<int:file_id>", methods=["GET"])
 def download_file(file_id):
-    hubfile = HubfileService().get_or_404(file_id)
-    user_owner = hubfile.get_owner_user()
-    filename = hubfile.name
+    file = HubfileService().get_or_404(file_id)
+    filename = file.name
 
-    directory_path = os.path.join(
-        "uploads",
-        f"user_{user_owner.id}",
-        f"dataset_{hubfile.feature_model.data_set_id}",
-        "uvl"
-    )
-
+    directory_path = f"uploads/user_{file.feature_model.data_set.user_id}/dataset_{file.feature_model.data_set_id}/"
     parent_directory_path = os.path.dirname(current_app.root_path)
     file_path = os.path.join(parent_directory_path, directory_path)
 
-    user_cookie = hubfile_download_record_service.create_cookie(hubfile=hubfile)
+    # Get the cookie from the request or generate a new one if it does not exist
+    user_cookie = request.cookies.get("file_download_cookie")
+    if not user_cookie:
+        user_cookie = str(uuid.uuid4())
 
+    # Check if the download record already exists for this cookie
+    existing_record = HubfileDownloadRecord.query.filter_by(
+        user_id=current_user.id if current_user.is_authenticated else None,
+        file_id=file_id,
+        download_cookie=user_cookie
+    ).first()
+
+    if not existing_record:
+        # Record the download in your database
+        HubfileDownloadRecordService().create(
+            user_id=current_user.id if current_user.is_authenticated else None,
+            file_id=file_id,
+            download_date=datetime.now(timezone.utc),
+            download_cookie=user_cookie,
+        )
+
+    # Save the cookie to the user's browser
     resp = make_response(
         send_from_directory(directory=file_path, path=filename, as_attachment=True)
     )
