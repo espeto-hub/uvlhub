@@ -47,3 +47,19 @@ Total de tiempo empleado en reuniones virtuales: 1h 0m
 - Gonzalo -> User profile tests
 - Juan Pedro -> Codacy y empezar bot integration
 - María -> Tests Selenium fakenodo
+
+### 2024-11-28
+
+#### Asistentes
+
+- Castillejo Vela, Manuel
+- Domínguez Moreno, Jose Gonzalo
+- Gálvez López, Juan Pedro
+- Pérez Lázaro, Francisco
+- Rodriguez Millán, Maria C.
+
+#### Acuerdos tomados
+
+- Mejorar el acta fundacional
+- Usar nomenclaturas revisadas y consistentes para commits, ramas, issues y PRs a partir de ahora
+- Por recomendación del profesor, no modificar aquellos commits, ramas, issues o PRs ya creados
