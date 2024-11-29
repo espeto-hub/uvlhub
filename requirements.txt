@@ -10,7 +10,7 @@ Brotli==1.1.0
 bs4==0.0.2
 certifi==2024.7.4
 cffi==1.16.0
-charset-normalizer==3.3.2
+charset-normalizer==3.4.0
 click==8.1.7
 ConfigArgParse==1.7
 coverage==7.6.0
