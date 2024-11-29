@@ -5,10 +5,10 @@ services:
     image: ghcr.io/espeto-hub/uvlhub:latest
     env_file:
       - ../.env
-    ports:
-      - "5000:5000"
+    network_mode: service:tailscale
     depends_on:
       - db
+      - tailscale
     restart: always
     volumes:
       - ./entrypoints/production_entrypoint.sh:/app/entrypoint.sh
@@ -30,20 +30,19 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
-  nginx:
-    container_name: nginx_web_server_container
-    image: nginx:latest
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    env_file:
+      - ../.env
     volumes:
-      - ./nginx/nginx.prod.ssl.conf:/etc/nginx/nginx.conf
-      - ./nginx/html:/usr/share/nginx/html
-      - ./letsencrypt:/etc/letsencrypt:ro
-      - ./public:/var/www:rw
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - web
-    restart: always
+      - tailscale_data:/var/lib/tailscale
+      - ./tailscale/config.json:/config.json
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
 
   watchtower:
     container_name: watchtower_container
@@ -53,12 +52,6 @@ services:
     command: --cleanup --interval 120 web_app_container
     restart: always
 
-  certbot:
-    image: certbot/certbot
-    container_name: certbot_container
-    volumes:
-      - ./public:/var/www:rw
-      - ./letsencrypt:/etc/letsencrypt
-
 volumes:
   db_data:
+  tailscale_data:

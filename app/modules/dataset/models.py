@@ -84,6 +84,10 @@ class DataSet(db.Model):
     def files(self):
         return [file for fm in self.feature_models for file in fm.files]
 
+    def is_synchronized(self) -> bool:
+        from app.modules.dataset.services import DataSetService
+        return DataSetService.is_synchronized(dataset_id=self.id)
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
