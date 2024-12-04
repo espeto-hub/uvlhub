@@ -48,7 +48,7 @@ Total de tiempo empleado en reuniones virtuales: 1h 0m
 - Juan Pedro -> Codacy y empezar bot integration
 - María -> Tests Selenium fakenodo
 
-### 2024-11-28
+### 2024-11-28 (sesión de seguimiento de código)
 
 #### Asistentes
 
@@ -63,3 +63,27 @@ Total de tiempo empleado en reuniones virtuales: 1h 0m
 - Mejorar el acta fundacional
 - Usar nomenclaturas revisadas y consistentes para commits, ramas, issues y PRs a partir de ahora
 - Por recomendación del profesor, no modificar aquellos commits, ramas, issues o PRs ya creados
+
+### 2024-12-04 (sesión de seguimiento de pruebas)
+
+#### Asistentes
+
+- Castillejo Vela, Manuel
+- Domínguez Moreno, Jose Gonzalo
+- Gálvez López, Juan Pedro
+- Pérez Lázaro, Francisco
+- Rodriguez Millán, Maria C.
+
+#### Feedback
+
+- commits para test deberían ser test: <mensaje>
+- buscar errores en testing de selenium, añadiendo catches
+- faltan tests de carga
+
+#### Decisiones
+
+- establecer estructura y diseño de tests en el acta > Francisco
+- usar test: <mensaje> en los commits
+- hacer más tests de carga en general
+- empezar bot integration > Juan Pedro
+- empezar advanced filtering > María
