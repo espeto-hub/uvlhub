@@ -2,6 +2,7 @@ afmparser==1.0.3
 alembic==1.13.2
 aniso8601==9.0.1
 antlr4-python3-runtime==4.13.1
+apprise==1.9.0
 astutils==0.0.6
 attrs==23.2.0
 beautifulsoup4==4.12.3
