@@ -21,3 +21,24 @@ def create_bot():
         return redirect(url_for("public.index"))
 
     return render_template('bot/create.html')
+
+
+@bot_bp.route('/bots/edit/<int:bot_id>', methods=['GET', 'POST'])
+@login_required
+def edit_bot(bot_id):
+    bot = BotService().get_by_id(bot_id)
+    if not bot:
+        return redirect(url_for('bot.list_bots'))
+
+    return render_template('bot/edit.html', bot=bot)
+
+
+@bot_bp.route('/bots/delete/<int:bot_id>', methods=['GET'])
+@login_required
+def delete_bot(bot_id):
+    bot = BotService().get_by_id(bot_id)
+    if not bot:
+        return redirect(url_for('bot.list_bots'))
+
+    BotService().delete(bot)
+    return redirect(url_for('bot.list_bots'))
