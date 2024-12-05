@@ -1,9 +1,23 @@
 {% extends "base_template.html" %}
 
-{% block title %}View bot{% endblock %}
+{% block title %}My bots{% endblock %}
 
 {% block content %}
-Hello!
+
+    <h1 class="h3 mb-3">My bots</h1>
+
+    {% if bots %}
+        <ul>
+            {% for bot in bots %}
+                <li>
+                    <strong>{{ bot.name }}</strong>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no bots.</p>
+    {% endif %}
+
 {% endblock %}
 
 {% block scripts %}
