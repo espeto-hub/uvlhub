@@ -3,6 +3,7 @@ from flask_login import login_required
 
 from app.modules.auth.services import AuthenticationService
 from app.modules.bot import bot_bp
+from app.modules.bot.services import BotService
 
 
 @bot_bp.route('/bots/list', methods=['GET'])
