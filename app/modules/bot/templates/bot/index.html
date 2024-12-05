@@ -7,15 +7,49 @@
     <h1 class="h3 mb-3">My bots</h1>
 
     {% if bots %}
-        <ul>
-            {% for bot in bots %}
-                <li>
-                    <strong>{{ bot.name }}</strong>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class=" col-12">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Options</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for bot in bots %}
+                            <tr>
+                                <td><strong>{{ bot.name }}</strong></td>
+                                <td>{{ bot.service_name }}</td>
+                                <td>
+                                    {% if bot.enabled %}
+                                        <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Disabled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('bot.edit_bot', bot_id=bot.id) }}">
+                                        <i data-feather="settings"></i>
+                                    </a>
+                                    <a href="{{ url_for('bot.delete_bot', bot_id=bot.id) }}">
+                                        <i data-feather="trash-2"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
     {% else %}
-        <p>You have no bots.</p>
+        <p>You have no bots registered.</p>
     {% endif %}
 
 {% endblock %}
