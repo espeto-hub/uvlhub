@@ -1,0 +1,51 @@
+{% extends "base_template.html" %}
+
+{% block title %}Select a service{% endblock %}
+
+{% block content %}
+    <!-- list of all strings in "names" object -->
+    <div class="row">
+        <div class="col-12">
+            <h1>Select a service</h1>
+        </div>
+    </div>
+
+    <div class="mb-4"></div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table"  id="services">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Options</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for name in names %}
+                            <tr>
+                                <td><strong>{{ name }}</strong></td>
+                                <td>
+                                    <a href="{{ url_for('bot.create_bot', service_name=name) }}"
+                                       class="btn btn-primary d-flex justify-content-center align-items-center">Select</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('bot.scripts') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('#services').DataTable();
+        });
+    </script>
+{% endblock %}
