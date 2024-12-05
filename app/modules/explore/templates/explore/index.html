@@ -85,6 +85,30 @@
                             </div>
 
                         </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="number_of_products">Filter by Number of Products</label>
+                                <select class="form-control" id="number_of_products" name="number_of_products" required>
+                                    <option value="any" selected>Any</option>
+                                    {% for i in range(1, 11) %}
+                                        <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                    <option value="more_than_10">+10</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="number_of_features">Filter by Number of Features</label>
+                                <select class="form-control" id="number_of_features" name="number_of_features" required>
+                                    <option value="any" selected>Any</option>
+                                    {% for i in range(1, 11) %}
+                                        <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                    <option value="more_than_10">+10</option>
+                                </select>
+                            </div>
+                        </div>
 
                     </div>
 
