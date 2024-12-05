@@ -33,7 +33,7 @@ def edit_bot(bot_id):
     return render_template('bot/edit.html', bot=bot)
 
 
-@bot_bp.route('/bots/delete/<int:bot_id>', methods=['GET'])
+@bot_bp.route('/bots/delete/<int:bot_id>', methods=['POST'])
 @login_required
 def delete_bot(bot_id):
     bot = BotService().get_by_id(bot_id)

@@ -12,5 +12,9 @@ class Bot(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='bots', lazy=True)
 
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
     def __repr__(self):
         return f'{self.name} bot <{self.id}>'
