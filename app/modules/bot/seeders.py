@@ -9,7 +9,7 @@ class BotSeeder(BaseSeeder):
         user1 = User.query.filter_by(email='user1@example.com').first()
 
         data = [
-            Bot(name='Bot 1', args={'arg1': 'value1'}, user_id=user1.id),
+            Bot(name='Bot 1', service_name='Discord', args={'arg1': 'value1'}, user_id=user1.id),
         ]
 
         self.seed(data)
