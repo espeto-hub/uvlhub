@@ -121,6 +121,13 @@ chico sundermann">
                         </a>
                     </li>
 
+                    <li class="sidebar-item {{ 'active' if request.endpoint == 'bot.list_bots' else '' }}">
+                        <a class="sidebar-link" href="{{ url_for('bot.list_bots') }}">
+                            <i class="align-middle" data-feather="radio"></i> <span
+                                class="align-middle">My bots</span>
+                        </a>
+                    </li>
+
                     <li class="sidebar-item">
                         <a class="sidebar-link" href="{{ url_for('auth.logout') }}">
                             <i class="align-middle" data-feather="log-out"></i> <span
