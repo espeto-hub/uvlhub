@@ -26,3 +26,7 @@ class AppriseExtension:
 
     async def async_notify(self, *args, **kwargs):
         return await self.apprise.async_notify(*args, **kwargs)
+
+    @property
+    def service_names(self):
+        return sorted([str(s['service_name']) for s in self.details()['schemas']])
