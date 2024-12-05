@@ -7,12 +7,12 @@ from app.modules.bot import bot_bp
 
 @bot_bp.route('/bots/list', methods=['GET'])
 @login_required
-def index():
+def list_bots():
     return render_template('bot/index.html')
 
 @bot_bp.route('/bots/create', methods=['GET', 'POST'])
 @login_required
-def create():
+def create_bot():
     auth_service = AuthenticationService()
     profile = auth_service.get_authenticated_user_profile
     if not profile:
