@@ -11,6 +11,7 @@ from core.managers.module_manager import ModuleManager
 from core.managers.config_manager import ConfigManager
 from core.managers.error_handler_manager import ErrorHandlerManager
 from core.managers.logging_manager import LoggingManager
+from core.apprise.apprise import AppriseExtension
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +19,7 @@ load_dotenv()
 # Create the instances
 db = SQLAlchemy()
 migrate = Migrate()
+apprise = AppriseExtension()
 
 
 def create_app(config_name='development'):
@@ -30,6 +32,7 @@ def create_app(config_name='development'):
     # Initialize SQLAlchemy and Migrate with the app
     db.init_app(app)
     migrate.init_app(app, db)
+    apprise.init_app(app)
 
     # Register modules
     module_manager = ModuleManager(app)
