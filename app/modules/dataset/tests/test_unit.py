@@ -1,105 +1,134 @@
-from unittest.mock import MagicMock, patch
-from app import create_app
+
+from unittest.mock import patch
+import pytest
+from app.modules.dataset.repositories import DSMetaDataRepository
 from app.modules.dataset.models import Rating
+from app.modules.dataset.services import Rating as DatasetRatingService
 
 
-def test_count_dsmetadata(dataset_service):
-    """Test counting metadata entries."""
-    with patch.object(dataset_service, 'dsmetadata_repository', MagicMock()) as dsmetadata_repository_mock:
-        dsmetadata_repository_mock.count.return_value = 20
-        result = dataset_service.count_dsmetadata()
+
+@pytest.fixture(scope="module")
+def test_count_dsmetadata_calls_repository():
+    """Test that count_dsmetadata calls the repository's count method."""
+    with patch("app.modules.dataset.repositories.DSMetaDataRepository.count") as mock_count:
+        mock_count.return_value = 20
+
+        # Crear un objeto DSMetaDataRepository
+        repo = DSMetaDataRepository()
+        result = repo.count()
+
+        # Verificar que el método count fue llamado y devuelve el valor correcto
+        mock_count.assert_called_once()
         assert result == 20
 
 
-def test_rate_for_first_time(dataset_rating_service):
-    """Test submitting a rating for the first time."""
-    app = create_app()
-    with app.app_context():
-        with patch.object(dataset_rating_service.repository, 'add_rating') as mock_submit_rating, \
-                patch.object(dataset_rating_service.repository, 'find_user_rating') as mock_find_rating:
+@pytest.fixture(scope="module")
+def test_rate_for_first_time_creates_new_rating():
+    """Test creating a new rating for a dataset."""
+    with patch("app.modules.dataset.repositories.RatingRepository.add_rating") as mock_add_rating, \
+            patch("app.modules.dataset.repositories.RatingRepository.find_user_rating") as mock_find_rating:
 
-            # Mock behaviors
-            mock_submit_rating.return_value = MagicMock(rate=5, dataset_id=1, user_id=1)
-            mock_find_rating.return_value = None
+        # Crear mocks para las dependencias
+        mock_find_rating.return_value = None
+        mock_add_rating.return_value = Rating(rate=5, dataset_id=1, user_id=1)
 
-            dataset_id = 1
-            user_id = 1
-            rate = 5
-            result = dataset_rating_service.submit_rating(dataset_id, user_id, rate)
+        # Crear instancia del servicio
+        service = DatasetRatingService()
 
-            assert result.rate == rate
-            assert result.dataset_id == dataset_id
-            assert result.user_id == user_id
-            mock_submit_rating.assert_called_once_with(dataset_id, user_id, rate)
+        # Probar el método submit_rating
+        dataset_id = 1
+        user_id = 1
+        rate = 5
+        result = service.submit_rating(dataset_id, user_id, rate)
+
+        # Validar comportamiento
+        mock_find_rating.assert_called_once_with(dataset_id, user_id)
+        mock_add_rating.assert_called_once_with(dataset_id, user_id, rate)
+        assert result.rate == rate
+        assert result.dataset_id == dataset_id
+        assert result.user_id == user_id
 
 
-def test_update_rate(dataset_rating_service):
+@pytest.fixture(scope="module")
+def test_update_existing_rating():
     """Test updating an existing rating."""
-    app = create_app()
-    with app.app_context():
-        with patch.object(dataset_rating_service.repository, 'find_user_rating') as mock_find_rating, \
-                patch.object(dataset_rating_service.repository, 'update_rating') as mock_update_rating:
+    with patch("app.modules.dataset.repositories.RatingRepository.find_user_rating") as mock_find_rating, \
+            patch("app.modules.dataset.repositories.RatingRepository.update_rating") as mock_update_rating:
 
-            # Mock old rating
-            mock_old_rating = MagicMock(spec=Rating, rate=3, dataset_id=1, user_id=1)
-            mock_find_rating.return_value = mock_old_rating
+        # Simular la existencia de un rating previo
+        existing_rating = Rating(rate=3, dataset_id=1, user_id=1)
+        mock_find_rating.return_value = existing_rating
 
-            dataset_id = 1
-            user_id = 1
-            new_rate = 5
+        # Crear instancia del servicio
+        service = DatasetRatingService()
 
-            result = dataset_rating_service.submit_rating(dataset_id, user_id, new_rate)
+        # Actualizar el rating
+        dataset_id = 1
+        user_id = 1
+        new_rate = 5
+        result = service.submit_rating(dataset_id, user_id, new_rate)
 
-            assert result == mock_old_rating
-            assert mock_old_rating.rate == new_rate
-            mock_find_rating.assert_called_once_with(dataset_id, user_id)
-            mock_update_rating.assert_called_once_with(mock_old_rating, new_rate)
-
-
-def test_get_average_rating(dataset_rating_service):
-    """Test calculating average rating."""
-    app = create_app()
-    with app.app_context():
-        with patch.object(dataset_rating_service.repository, 'get_all_ratings') as mock_get_all_ratings:
-            mock_get_all_ratings.return_value = [
-                MagicMock(rate=5),
-                MagicMock(rate=4),
-                MagicMock(rate=3)
-            ]
-
-            dataset_id = 1
-            result = dataset_rating_service.get_average_rating(dataset_id)
-
-            assert result == 4  # Average of 5, 4, 3
-            mock_get_all_ratings.assert_called_once_with(dataset_id)
+        # Validar que se actualizó correctamente
+        mock_find_rating.assert_called_once_with(dataset_id, user_id)
+        mock_update_rating.assert_called_once_with(existing_rating, new_rate)
+        assert result.rate == new_rate
 
 
-def test_find_rating_by_user_and_dataset(dataset_rating_service):
+@pytest.fixture(scope="module")
+def test_calculate_average_rating():
+    """Test calculating the average rating for a dataset."""
+    with patch("app.modules.dataset.repositories.RatingRepository.get_all_ratings") as mock_get_all_ratings:
+        mock_get_all_ratings.return_value = [
+            Rating(rate=5, dataset_id=1, user_id=1),
+            Rating(rate=4, dataset_id=1, user_id=2),
+            Rating(rate=3, dataset_id=1, user_id=3),
+        ]
+
+        # Crear instancia del servicio
+        service = DatasetRatingService()
+
+        # Calcular el promedio
+        dataset_id = 1
+        result = service.get_average_rating(dataset_id)
+
+        # Validar que el promedio es correcto
+        mock_get_all_ratings.assert_called_once_with(dataset_id)
+        assert result == 4  # (5 + 4 + 3) / 3
+
+
+@pytest.fixture(scope="module")
+def test_find_rating_by_user_and_dataset():
     """Test finding a rating by user and dataset."""
-    app = create_app()
-    with app.app_context():
-        with patch.object(dataset_rating_service.repository, 'find_user_rating') as mock_find_rating:
-            mock_rating = MagicMock(rate=5, dataset_id=1, user_id=1)
-            mock_find_rating.return_value = mock_rating
+    with patch("app.modules.dataset.repositories.RatingRepository.find_user_rating") as mock_find_rating:
+        mock_rating = Rating(rate=5, dataset_id=1, user_id=1)
+        mock_find_rating.return_value = mock_rating
 
-            dataset_id = 1
-            user_id = 1
-            result = dataset_rating_service.find_rating_by_user_and_dataset(dataset_id, user_id)
+        # Crear instancia del servicio
+        service = DatasetRatingService()
 
-            assert result == mock_rating
-            mock_find_rating.assert_called_once_with(dataset_id, user_id)
+        # Probar la búsqueda
+        dataset_id = 1
+        user_id = 1
+        result = service.find_rating_by_user_and_dataset(dataset_id, user_id)
+
+        # Validar que el resultado es correcto
+        mock_find_rating.assert_called_once_with(dataset_id, user_id)
+        assert result == mock_rating
 
 
-def test_multiple_users_rate_same_dataset(dataset_rating_service):
-    """Test multiple users rating the same dataset."""
-    app = create_app()
-    with app.app_context():
-        with patch.object(dataset_rating_service.repository, 'add_rating') as mock_submit_rating:
+@pytest.fixture(scope="module")
+def test_multiple_users_rate_same_dataset():
+    """Test that multiple users can rate the same dataset."""
+    with patch("app.modules.dataset.repositories.RatingRepository.add_rating") as mock_add_rating:
 
-            dataset_id = 1
-            ratings = [(1, 4), (2, 5), (3, 3)]  # (user_id, rate)
+        # Crear instancia del servicio
+        service = DatasetRatingService()
 
-            for user_id, rate in ratings:
-                dataset_rating_service.submit_rating(dataset_id, user_id, rate)
-                mock_submit_rating.assert_called_with(dataset_id, user_id, rate)
-                mock_submit_rating.reset_mock()
+        # Probar múltiples ratings
+        dataset_id = 1
+        ratings = [(1, 4), (2, 5), (3, 3)]  # (user_id, rate)
+
+        for user_id, rate in ratings:
+            service.submit_rating(dataset_id, user_id, rate)
+            mock_add_rating.assert_called_with(dataset_id, user_id, rate)
+            mock_add_rating.reset_mock()
