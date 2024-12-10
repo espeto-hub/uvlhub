@@ -1,134 +1,113 @@
-
-from unittest.mock import patch
 import pytest
-from app.modules.dataset.repositories import DSMetaDataRepository
-from app.modules.dataset.models import Rating
-from app.modules.dataset.services import Rating as DatasetRatingService
+from flask import url_for
+from app import create_app, db
+from app.modules.dataset.models import DataSet, Rating
+from app.modules.auth.models import User
+from flask_login import login_user
 
 
+@pytest.fixture
+def test_client():
+    """Fixture para el cliente de pruebas."""
+    app = create_app('testing')
+    with app.test_client() as client:
+        with app.app_context():
+            # Limpiar y crear la base de datos
+            db.drop_all()
+            db.create_all()
 
-@pytest.fixture(scope="module")
-def test_count_dsmetadata_calls_repository():
-    """Test that count_dsmetadata calls the repository's count method."""
-    with patch("app.modules.dataset.repositories.DSMetaDataRepository.count") as mock_count:
-        mock_count.return_value = 20
+            # Crear un usuario de prueba
+            user = User(email="test@example.com", password="password123")
+            db.session.add(user)
+            db.session.commit()
 
-        # Crear un objeto DSMetaDataRepository
-        repo = DSMetaDataRepository()
-        result = repo.count()
+            # Crear un dataset de prueba
+            dataset = DataSet(name="Test Dataset", user_id=user.id)
+            db.session.add(dataset)
+            db.session.commit()
 
-        # Verificar que el método count fue llamado y devuelve el valor correcto
-        mock_count.assert_called_once()
-        assert result == 20
+            # Iniciar sesión como el usuario de prueba
+            login_user(user)
 
+            yield client
 
-@pytest.fixture(scope="module")
-def test_rate_for_first_time_creates_new_rating():
-    """Test creating a new rating for a dataset."""
-    with patch("app.modules.dataset.repositories.RatingRepository.add_rating") as mock_add_rating, \
-            patch("app.modules.dataset.repositories.RatingRepository.find_user_rating") as mock_find_rating:
-
-        # Crear mocks para las dependencias
-        mock_find_rating.return_value = None
-        mock_add_rating.return_value = Rating(rate=5, dataset_id=1, user_id=1)
-
-        # Crear instancia del servicio
-        service = DatasetRatingService()
-
-        # Probar el método submit_rating
-        dataset_id = 1
-        user_id = 1
-        rate = 5
-        result = service.submit_rating(dataset_id, user_id, rate)
-
-        # Validar comportamiento
-        mock_find_rating.assert_called_once_with(dataset_id, user_id)
-        mock_add_rating.assert_called_once_with(dataset_id, user_id, rate)
-        assert result.rate == rate
-        assert result.dataset_id == dataset_id
-        assert result.user_id == user_id
+            db.session.remove()
+            db.drop_all()
 
 
-@pytest.fixture(scope="module")
-def test_update_existing_rating():
-    """Test updating an existing rating."""
-    with patch("app.modules.dataset.repositories.RatingRepository.find_user_rating") as mock_find_rating, \
-            patch("app.modules.dataset.repositories.RatingRepository.update_rating") as mock_update_rating:
+def test_rate_dataset_get(test_client):
+    """Test para la solicitud GET de la ruta de calificación del dataset."""
+    # Obtener el dataset creado en el fixture
+    dataset = DataSet.query.first()
 
-        # Simular la existencia de un rating previo
-        existing_rating = Rating(rate=3, dataset_id=1, user_id=1)
-        mock_find_rating.return_value = existing_rating
+    # Realizar la solicitud GET
+    response = test_client.get(url_for('dataset.rate_dataset', dataset_id=dataset.id))
 
-        # Crear instancia del servicio
-        service = DatasetRatingService()
-
-        # Actualizar el rating
-        dataset_id = 1
-        user_id = 1
-        new_rate = 5
-        result = service.submit_rating(dataset_id, user_id, new_rate)
-
-        # Validar que se actualizó correctamente
-        mock_find_rating.assert_called_once_with(dataset_id, user_id)
-        mock_update_rating.assert_called_once_with(existing_rating, new_rate)
-        assert result.rate == new_rate
+    # Verificar que la respuesta sea exitosa
+    assert response.status_code == 200
+    assert b'Calificacion' in response.data  # Verificar que el formulario esté presente en la página
 
 
-@pytest.fixture(scope="module")
-def test_calculate_average_rating():
-    """Test calculating the average rating for a dataset."""
-    with patch("app.modules.dataset.repositories.RatingRepository.get_all_ratings") as mock_get_all_ratings:
-        mock_get_all_ratings.return_value = [
-            Rating(rate=5, dataset_id=1, user_id=1),
-            Rating(rate=4, dataset_id=1, user_id=2),
-            Rating(rate=3, dataset_id=1, user_id=3),
-        ]
+def test_rate_dataset_post(test_client):
+    """Test para la solicitud POST de la ruta de calificación del dataset."""
+    dataset = DataSet.query.first()
 
-        # Crear instancia del servicio
-        service = DatasetRatingService()
+    # Datos del formulario (calificación de 5)
+    form_data = {
+        'score': 5  # Calificación de 5
+    }
 
-        # Calcular el promedio
-        dataset_id = 1
-        result = service.get_average_rating(dataset_id)
+    # Realizar la solicitud POST con los datos del formulario
+    response = test_client.post(url_for('dataset.rate_dataset', dataset_id=dataset.id), data=form_data, 
+                                follow_redirects=True)
 
-        # Validar que el promedio es correcto
-        mock_get_all_ratings.assert_called_once_with(dataset_id)
-        assert result == 4  # (5 + 4 + 3) / 3
+    # Verificar que la respuesta sea una redirección a la vista del dataset
+    assert response.status_code == 200
+    assert b'Vista del Dataset' in response.data  # Asegurarnos de que la vista del dataset se muestre tras la redirección
 
-
-@pytest.fixture(scope="module")
-def test_find_rating_by_user_and_dataset():
-    """Test finding a rating by user and dataset."""
-    with patch("app.modules.dataset.repositories.RatingRepository.find_user_rating") as mock_find_rating:
-        mock_rating = Rating(rate=5, dataset_id=1, user_id=1)
-        mock_find_rating.return_value = mock_rating
-
-        # Crear instancia del servicio
-        service = DatasetRatingService()
-
-        # Probar la búsqueda
-        dataset_id = 1
-        user_id = 1
-        result = service.find_rating_by_user_and_dataset(dataset_id, user_id)
-
-        # Validar que el resultado es correcto
-        mock_find_rating.assert_called_once_with(dataset_id, user_id)
-        assert result == mock_rating
+    # Verificar que la calificación se haya guardado en la base de datos
+    rating = Rating.query.filter_by(dataset_id=dataset.id).first()
+    assert rating is not None
+    assert rating.score == 5  # Verificar que la calificación sea la esperada
+    assert rating.user_id == 1  # Asegurarse de que el usuario de la calificación sea el correcto
 
 
-@pytest.fixture(scope="module")
-def test_multiple_users_rate_same_dataset():
-    """Test that multiple users can rate the same dataset."""
-    with patch("app.modules.dataset.repositories.RatingRepository.add_rating") as mock_add_rating:
+def test_rate_dataset_post_with_invalid_data(test_client):
+    """Test para la solicitud POST con datos inválidos."""
+    dataset = DataSet.query.first()
 
-        # Crear instancia del servicio
-        service = DatasetRatingService()
+    # Datos del formulario inválidos (por ejemplo, sin calificación)
+    form_data = {
+        'score': None  # Calificación inválida
+    }
 
-        # Probar múltiples ratings
-        dataset_id = 1
-        ratings = [(1, 4), (2, 5), (3, 3)]  # (user_id, rate)
+    # Realizar la solicitud POST con los datos inválidos
+    response = test_client.post(url_for('dataset.rate_dataset', dataset_id=dataset.id), data=form_data, 
+                                follow_redirects=True)
 
-        for user_id, rate in ratings:
-            service.submit_rating(dataset_id, user_id, rate)
-            mock_add_rating.assert_called_with(dataset_id, user_id, rate)
-            mock_add_rating.reset_mock()
+    # Verificar que se muestra un mensaje de error
+    assert response.status_code == 200
+    assert b'Hubo un problema al guardar la calificacion' in response.data  # Verificar el mensaje de error
+
+
+def test_rate_dataset_redirect_on_success(test_client):
+    """Test para asegurarse de que la calificación se guarda y redirige correctamente."""
+    dataset = DataSet.query.first()
+
+    # Datos del formulario válidos
+    form_data = {
+        'score': 4  # Calificación válida
+    }
+
+    # Realizar la solicitud POST con los datos válidos
+    response = test_client.post(url_for('dataset.rate_dataset', dataset_id=dataset.id), data=form_data, 
+                                follow_redirects=True)
+
+    # Verificar la redirección al detalle del dataset
+    assert response.status_code == 200
+    assert b'Vista del Dataset' in response.data
+
+    # Verificar que la calificación se haya guardado correctamente
+    rating = Rating.query.filter_by(dataset_id=dataset.id).first()
+    assert rating is not None
+    assert rating.score == 4  # Verificar que la calificación guardada sea la esperada
