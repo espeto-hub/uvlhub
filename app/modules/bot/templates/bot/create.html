@@ -31,6 +31,14 @@
 
                 <div class="row form-group">
                     <div class="col-6">
+                        {{ form.service_name.label(class="form-label") }}
+                        {{ form.service_name(class="form-control", placeholder="schema://example/url", required=true) }}
+                        {% for error in form.service_name.errors %}
+                            <span style="color: red;">{{ error }}</span>
+                            <br>
+                        {% endfor %}
+                    </div>
+                    <div class="col-6">
                         {{ form.service_url.label(class="form-label") }}
                         {{ form.service_url(class="form-control", placeholder="schema://example/url", required=true) }}
                         {% for error in form.service_url.errors %}
