@@ -8,25 +8,25 @@ class DatasetBehavior(TaskSet):
     def on_start(self):
         self.dataset()
 
-    @task(5)  
+    @task(5)
     def open_dataset(self):
         dataset_id = randint(1, 100)
         self.client.get(f"/dataset/view/{dataset_id}")
         print(f"Opened dataset {dataset_id}")
 
-    @task(3)  
+    @task(3)
     def dataset(self):
         response = self.client.get("/dataset/upload")
         get_csrf_token(response)
 
-    @task(2)  
+    @task(2)
     def dataset_rate(self):
         for i in range(4):
             dataset_id = i + 1
             self.client.post(f"/rate_dataset/{dataset_id}", data={"rate": (i * 2) % 5})
         print("Rated dataset")
 
-    @task(1)  
+    @task(1)
     def search_dataset(self):
         query = "example"
         self.client.get(f"/dataset/search?query={query}")
