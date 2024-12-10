@@ -1,31 +1,34 @@
-from locust import HttpUser, task
-from core.environment.host import get_host_for_locust_testing
+from locust import HttpUser, task, between
 
 
 class FakenodoUser(HttpUser):
-    min_wait = 1000
-    max_wait = 3000
-    host = get_host_for_locust_testing()
+    wait_time = between(1, 9)
+    host = "http://web_app_container:5000"
 
     @task
-    def upload_dataset(self):
-        response = self.client.post(
-            "/fakenodo/upload",
-            files={"file": ("example.csv", open("example.csv", "rb"))}
-        )
-        assert response.status_code == 201, f"Upload failed: {response.status_code}"
+    def test_connection(self):
+        self.client.get("/fakenodo/api")
 
     @task
-    def download_dataset(self):
-        response = self.client.get("/fakenodo/download/1")
-        assert response.status_code == 200, f"Download failed: {response.status_code}"
+    def create_deposition(self):
+        self.client.post("/fakenodo/api")
 
     @task
-    def list_datasets(self):
-        response = self.client.get("/fakenodo/datasets")
-        assert response.status_code == 200, f"List datasets failed: {response.status_code}"
+    def create_deposition_files(self):
+        deposition_id = 123
+        self.client.post(f"/fakenodo/api/{deposition_id}/files")
 
     @task
-    def delete_dataset(self):
-        response = self.client.delete("/fakenodo/dataset/1")
-        assert response.status_code == 200, f"Delete failed: {response.status_code}"
+    def delete_deposition(self):
+        deposition_id = 123
+        self.client.delete(f"/fakenodo/api/{deposition_id}")
+
+    @task
+    def publish_deposition(self):
+        deposition_id = 123
+        self.client.post(f"/fakenodo/api/{deposition_id}/actions/publish")
+
+    @task
+    def get_deposition(self):
+        deposition_id = 123
+        self.client.get(f"/fakenodo/api/{deposition_id}")
