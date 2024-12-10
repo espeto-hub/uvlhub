@@ -3,7 +3,86 @@
 {% block title %}View bot{% endblock %}
 
 {% block content %}
-    Hello!
+
+    <h1>Create bot</h1>
+
+    <div class="mb-4"></div>
+
+    <div class="row">
+        <div class="col-12 col-lg-6">
+
+            <form method="POST" action="{{ url_for('bot.create_bot') }}" class="needs-validation" novalidate>
+                {{ form.hidden_tag() }}
+
+                <h1 class="h3 mb-3">Bot info</h1>
+
+                <div class="row form-group">
+                    <div class="col-6">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", placeholder="Enter the bot name", required=true) }}
+                        {% for error in form.name.errors %}
+                            <span style="color: red;">{{ error }}</span>
+                            <br>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-4"></div>
+
+                <div class="row form-group">
+                    <div class="col-6">
+                        {{ form.service_url.label(class="form-label") }}
+                        {{ form.service_url(class="form-control", placeholder="schema://example/url", required=true) }}
+                        {% for error in form.service_url.errors %}
+                            <span style="color: red;">{{ error }}</span>
+                            <br>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-4"></div>
+
+                <div class="row form-group">
+
+                    <div class="col-6">
+                        {{ form.enabled(default="checked", class="form-check-input") }}
+                        {{ form.enabled.label(class="form-label") }}
+                        {% for error in form.enabled.errors %}
+                            <span style="color: red;">{{ error }}</span>
+                            <br>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <div class="mb-4"></div>
+
+                <h1 class="h3 mb-3">Send messages</h1>
+
+                <div class="row form-group">
+
+                    <div class="col-6">
+                        {{ form.on_download_dataset(default="checked", class="form-check-input") }}
+                        {{ form.on_download_dataset.label(class="form-label") }}
+                        {% for error in form.on_download_dataset.errors %}
+                            <span style="color: red;">{{ error }}</span>
+                            <br>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <div class="row form-group">
+                    <div class="col-12 mt-3">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+
 {% endblock %}
 
 {% block scripts %}

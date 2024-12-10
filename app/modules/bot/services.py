@@ -14,3 +14,17 @@ class BotService(BaseService):
 
     def delete(self, bot):
         return self.repository.delete(bot)
+
+    def create_bot(self, user_id, form):
+        if form.validate():
+            created_instance = self.create(
+                name=form.name.data,
+                service_name=form.service_url.data.split("://")[0],
+                service_url=form.service_url.data,
+                enabled=form.enabled.data,
+                on_download_dataset=form.on_download_dataset.data,
+                user_id=user_id,
+            )
+            return created_instance, None
+
+        return None, form.errors
