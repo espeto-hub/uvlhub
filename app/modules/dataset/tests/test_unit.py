@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 from app import create_app
-from models import Rating
+from app.modules.dataset.models import Rating
 
 
 def test_count_dsmetadata(dataset_service):
