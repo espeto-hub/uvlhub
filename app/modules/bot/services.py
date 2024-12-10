@@ -1,3 +1,4 @@
+from app import apprise
 from app.modules.bot.repositories import BotRepository
 from core.services.BaseService import BaseService
 
@@ -19,7 +20,7 @@ class BotService(BaseService):
         if form.validate():
             created_instance = self.create(
                 name=form.name.data,
-                service_name=form.service_url.data.split("://")[0],
+                service_name=form.service_name.data,
                 service_url=form.service_url.data,
                 enabled=form.enabled.data,
                 on_download_dataset=form.on_download_dataset.data,
