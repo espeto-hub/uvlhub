@@ -1,6 +1,6 @@
-from flask_wtf import FlaskForm
 import wtforms
-from wtforms.validators import DataRequired, Length, URL
+from flask_wtf import FlaskForm
+from wtforms.validators import DataRequired, Length
 
 from app import apprise
 
@@ -12,3 +12,8 @@ class CreateBotForm(FlaskForm):
     enabled = wtforms.BooleanField('Enabled', default=True)
     on_download_dataset = wtforms.BooleanField('On download dataset', default=False)
     submit = wtforms.SubmitField('Save')
+
+    def validate_service_url(self, field):
+        is_valid, error = apprise.is_url_valid(field.data, self.service_name.data)
+        if not is_valid:
+            raise wtforms.ValidationError(str(error))
