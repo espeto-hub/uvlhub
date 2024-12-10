@@ -26,4 +26,6 @@ def test_fakenodo_connection():
             raise AssertionError("El cuerpo de la página no contiene el mensaje esperado.")
 
     finally:
+
         close_driver(driver)
+

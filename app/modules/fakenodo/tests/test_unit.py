@@ -56,4 +56,6 @@ def test_get_deposition(client):
         "status": "success",
         "message": "You have successfully retrieved a deposition in Fakenodo",
         "doi": "10.1234/fakenodo.123456",
+
     }
+
