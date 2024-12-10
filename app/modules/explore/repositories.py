@@ -1,5 +1,5 @@
 import re
-from sqlalchemy import any_, or_, func
+from sqlalchemy import any_, or_
 import unidecode
 from app.modules.dataset.models import Author, DSMetaData, DataSet, PublicationType
 from app.modules.featuremodel.models import FMMetaData, FeatureModel
@@ -10,8 +10,7 @@ class ExploreRepository(BaseRepository):
     def __init__(self):
         super().__init__(DataSet)
 
-    def filter(self, query="", sorting="newest", publication_type="any", number_of_products=None,
-               number_of_features=None, tags=[], **kwargs):
+    def filter(self, query="", sorting="newest", publication_type="any", tags=[], **kwargs):
         # Normalize and remove unwanted characters
         normalized_query = unidecode.unidecode(query).lower()
         cleaned_query = re.sub(r'[,.":\'()\[\]^;!¡¿?]', "", normalized_query)
@@ -53,18 +52,6 @@ class ExploreRepository(BaseRepository):
         if tags:
             datasets = datasets.filter(DSMetaData.tags.ilike(any_(f"%{tag}%" for tag in tags)))
 
-        if number_of_products:
-            if number_of_products == "more_than_10":
-                datasets = datasets.filter(func.length(DataSet.products) > 10)
-            else:
-                datasets = datasets.filter(func.length(DataSet.products) == number_of_products)
-
-        # Filter by number of features
-        if number_of_features:
-            if number_of_features == "more_than_10":
-                datasets = datasets.filter(func.length(FeatureModel.features) > 10)
-            else:
-                datasets = datasets.filter(func.length(FeatureModel.features) == number_of_features)
         # Order by created_at
         if sorting == "oldest":
             datasets = datasets.order_by(self.model.created_at.asc())
