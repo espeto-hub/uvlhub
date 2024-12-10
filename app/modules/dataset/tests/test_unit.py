@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock, patch
-from flask import create_app
+from app import create_app
 from models import Rating
 
 
