@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 from flask import create_app
-from models import Rating¡
+from models import Rating
 
 
 def test_count_dsmetadata(dataset_service):
