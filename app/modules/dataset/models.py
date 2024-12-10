@@ -52,16 +52,11 @@ class Author(db.Model):
 class Rating(db.Model):
     __tablename__ = 'dataset_ratings'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    score = db.Column(db.Integer, nullable=False)
-    
+    score = db.Column(db.Integer, nullable=False) 
     dataset_id = db.Column(db.Integer, db.ForeignKey('data_set.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-    # Relationships
     dataset = db.relationship('DataSet', back_populates='ratings')
     user = db.relationship('User', back_populates='ratings')
-    
-    # Unique constraint for dataset-user pairs
     __table_args__ = (
         UniqueConstraint('dataset_id', 'user_id', name='uix_dataset_user'),
     )
@@ -69,43 +64,36 @@ class Rating(db.Model):
     def __repr__(self):
         return f'<Rating dataset_id={self.dataset_id}, user_id={self.user_id}, score={self.score}>'
 
-# Modelo de dataset (con calificación agregada)
+
 class DataSet(db.Model):
     __tablename__ = 'data_set'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
     ds_meta_data_id = db.Column(db.Integer, db.ForeignKey('ds_meta_data.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    # Relationships
     ds_meta_data = db.relationship('DSMetaData', backref=db.backref('data_set', uselist=False))
     feature_models = db.relationship('FeatureModel', backref='data_set', lazy=True, cascade="all, delete")
     ratings = db.relationship('Rating', back_populates='dataset', cascade="all, delete-orphan")
-    
+
     def get_uvlhub_doi(self):
         from app.modules.dataset.services import DataSetService
         return DataSetService().get_uvlhub_doi(self)
-    
+
     def get_files_count(self):
         return sum(len(fm.files) for fm in self.feature_models)
-    
+
     def get_file_total_size_for_human(self):
         from app.modules.dataset.services import SizeService
         return SizeService().get_human_readable_size(self.get_file_total_size())
-    
+
     def get_file_total_size(self):
         """Calcula el tamaño total de todos los archivos asociados al dataset."""
         return sum(file.size for fm in self.feature_models for file in fm.files)
 
-
-    
     def get_cleaned_publication_type(self):
         return self.ds_meta_data.publication_type.name.replace('_', ' ').title()
 
-
-    
-    # Método para obtener el promedio de calificación
     def get_average_rating(self):
         if not self.ratings:
             return None
@@ -114,6 +102,8 @@ class DataSet(db.Model):
     # Métodos adicionales
     def name(self):
         return self.ds_meta_data.title
+
+
 class DSMetrics(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     number_of_models = db.Column(db.String(120))

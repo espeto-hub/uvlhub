@@ -28,7 +28,7 @@ from app.modules.dataset.models import (
 )
 from app.modules.dataset import dataset_bp
 from app.modules.dataset.forms import RatingForm
-from app.modules.dataset.models import Rating, DataSet
+from app.modules.dataset.models import DataSet
 from app.modules.dataset.services import (
     AuthorService,
     DSDownloadRecordService,
@@ -213,7 +213,8 @@ def download_dataset(dataset_id):
         )
         resp.set_cookie("download_cookie", user_cookie)
     else:
-        resp = send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip")
+        resp = send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, 
+                                   mimetype="application/zip")
 
     # Comprobar si ya existe un registro de descarga para este usuario y dataset
     existing_record = DSDownloadRecord.query.filter_by(
@@ -266,7 +267,7 @@ def subdomain_index(doi):
 
     # Save the cookie to the user's browser
     user_cookie = ds_view_record_service.create_cookie(dataset=dataset)
-    resp = make_response(render_template("dataset/view_dataset.html",form=form, dataset=dataset))
+    resp = make_response(render_template("dataset/view_dataset.html", form=form, dataset=dataset))
     resp.set_cookie("view_cookie", user_cookie)
 
     return resp
@@ -298,7 +299,7 @@ def rate_dataset(dataset_id):
         try:
             # Usamos el servicio para guardar la calificación
             rating_service.save_rating(dataset_id=dataset.id, user_id=current_user.id, score=form.score.data)
-            
+
             # Redirigir al detalle del dataset después de guardar la calificación
             return redirect(url_for('dataset.view_dataset', dataset_id=dataset.id))  # Redirigir al detalle del dataset
         except ValueError as e:
