@@ -5,7 +5,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 def initialize_driver():
-    # Initializes the browser options
     options = webdriver.ChromeOptions()
     if os.getenv('HEADLESS', 'false').lower() == 'true':
         options.add_argument('--headless')
