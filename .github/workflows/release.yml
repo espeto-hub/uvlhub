@@ -1,0 +1,21 @@
+name: Create release on merge PR
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  release-on-merge:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Create release
+        uses: dexwritescode/release-on-merge-action@v1
+        with:
+          version-increment-strategy: ${{ contains(github.event.pull_request.labels.*.name, 'WI') && 'minor' || 'patch' }}
