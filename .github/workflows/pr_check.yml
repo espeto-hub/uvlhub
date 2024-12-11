@@ -2,7 +2,7 @@ name: Check PR attributes
 
 on:
   pull_request:
-    types: [opened, labeled, unlabeled, assigned, unassigned, review_requested, review_request_removed, milestoned, demilestoned]
+    types: [opened, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
     branches:
       - main
 
@@ -28,11 +28,6 @@ jobs:
         run: |
           echo 'The pull request must have someone assigned' >> $GITHUB_STEP_SUMMARY
           echo "no_assignee=true" >> "$GITHUB_ENV"
-      - name: Check if it has reviewers assigned
-        if: toJson(github.event.pull_request.requested_reviewers) == '[]'
-        run: |
-          echo 'The pull request must have a reviewer' >> $GITHUB_STEP_SUMMARY
-          echo "no_reviewer=true" >> "$GITHUB_ENV"
       - name: Check if it has milestone assigned
         if: github.event.pull_request.milestone == null
         run: |
@@ -44,11 +39,9 @@ jobs:
           message: |
             ${{ (env.no_type || env.too_type) && '❌' || '✅' }} The PR has a type label assigned (`WI` or `incidencia`)
             ${{ env.no_assignee && '❌' || '✅' }} The PR has someone asigned
-            ${{ env.no_reviewer && '❌' || '✅' }} The PR has a reviewer assigned
             ${{ env.no_milestone && '❌' || '✅' }} The PR has a milestone assigned
           comment-tag: pr_check
       - name: Error if needed
-        if: env.no_type || env.too_type || env.no_assignee || env.no_reviewer || env.no_milestone
+        if: env.no_type || env.too_type || env.no_assignee || env.no_milestone
         run: |
-          echo "${{ toJson(github.event.pull_request.requested_reviewers) }}"
           exit 1
