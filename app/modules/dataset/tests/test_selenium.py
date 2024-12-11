@@ -50,6 +50,9 @@ def test_download_all_datasets():
         driver.get(f"{host}/dataset/download/all")
         wait_for_page_to_load(driver)
 
+        # Verify that the download page loaded successfully
+        assert "Download All Datasets" in driver.title
+
         print("Test passed!")
 
     finally:
