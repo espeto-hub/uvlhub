@@ -36,3 +36,22 @@ def test_edit_profile_page_get(test_client):
     assert b"Edit profile" in response.data, "The expected content is not present on the page"
 
     logout(test_client)
+
+
+def test_user_profile_page_get(test_client):
+    """
+    Tests access to some user profile with its id.
+    """
+    login_response = login(test_client, "user@example.com", "test1234")
+    assert login_response.status_code == 200, "Login was unsuccessful."
+
+    user = User.query.filter_by(email="user@example.com").first()
+    assert user is not None, "User not found in the database."
+
+    url = f"/profile/{user.id}/"
+
+    response = test_client.get(url)
+    assert response.status_code == 200, f"The profile page for user {user.id} could not be accessed."
+
+    logout(test_client)
+
