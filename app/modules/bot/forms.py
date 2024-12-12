@@ -13,6 +13,8 @@ class CreateBotForm(FlaskForm):
     enabled = wtforms.BooleanField('Enabled', default=True)
     on_download_dataset = wtforms.BooleanField('On download dataset', default=False)
     user_id = wtforms.HiddenField()
+    test = wtforms.SubmitField('Test')
+    is_tested = wtforms.HiddenField(default='false')
     submit = wtforms.SubmitField('Save')
 
     def validate_service_url(self, field):
