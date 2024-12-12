@@ -19,3 +19,6 @@ class BotRepository(BaseRepository):
         bot = self.get_by_id(id)
         bot.update(**kwargs)
         return bot
+
+    def get_on_download_dataset_bots(self, user_id):
+        return self.model.query.filter_by(user_id=user_id, on_download_dataset=True, enabled=True).all()

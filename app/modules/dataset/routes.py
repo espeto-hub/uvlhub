@@ -1,6 +1,6 @@
+import json
 import logging
 import os
-import json
 import shutil
 import tempfile
 import uuid
@@ -20,11 +20,13 @@ from flask import (
 )
 from flask_login import login_required, current_user
 
+from app.modules.auth.services import AuthenticationService
+from app.modules.bot.services import BotMessagingService
+from app.modules.dataset import dataset_bp
 from app.modules.dataset.forms import DataSetForm
 from app.modules.dataset.models import (
     DSDownloadRecord
 )
-from app.modules.dataset import dataset_bp
 from app.modules.dataset.services import (
     AuthorService,
     DSDownloadRecordService,
@@ -179,6 +181,9 @@ def delete():
 
 @dataset_bp.route("/dataset/download/<int:dataset_id>", methods=["GET"])
 def download_dataset(dataset_id):
+    auth_service = AuthenticationService()
+    profile = auth_service.get_authenticated_user_profile()
+
     dataset = dataset_service.get_or_404(dataset_id)
 
     file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/"
@@ -238,6 +243,8 @@ def download_dataset(dataset_id):
             download_date=datetime.now(timezone.utc),
             download_cookie=user_cookie,
         )
+
+    BotMessagingService().on_download_dataset(dataset, profile)
 
     return resp
 
