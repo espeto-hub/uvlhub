@@ -51,6 +51,7 @@
                             <th>Name</th>
                             <th>Service</th>
                             <th>Status</th>
+                            <th>Events</th>
                             <th>Options</th>
                         </tr>
                         </thead>
@@ -64,6 +65,17 @@
                                         <span class="badge bg-success">Enabled</span>
                                     {% else %}
                                         <span class="badge bg-danger">Disabled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if bot.on_download_dataset %}
+                                        <span class="badge bg-secondary">On dataset downloaded</span>
+                                    {% endif %}
+                                    {% if bot.on_download_file %}
+                                        <span class="badge bg-secondary">On file downloaded</span>
+                                    {% endif %}
+                                    {% if not bot.on_download_dataset and not bot.on_download_file %}
+                                        -
                                     {% endif %}
                                 </td>
                                 <td>
