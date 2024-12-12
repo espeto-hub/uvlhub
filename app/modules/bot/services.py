@@ -40,6 +40,10 @@ class BotService(BaseService):
             on_download_dataset=form.on_download_dataset.data,
         )
 
+    def get_on_download_dataset_bot_urls(self, uploader_id):
+        return [b.service_url for b in self.repository.get_on_download_dataset_bots(uploader_id)]
+
+
 class BotMessagingService(BaseService):
     def __init__(self):
         super().__init__(BotRepository())
@@ -47,3 +51,19 @@ class BotMessagingService(BaseService):
     @staticmethod
     def send_test_message(urls: str | list[str]):
         return apprise.send_test_message(urls)
+
+    @staticmethod
+    def on_download_dataset(dataset, profile):
+        uploader_id = dataset.user_id
+        downloader_id = profile.user_id if profile else None
+        if uploader_id == downloader_id:
+            return
+
+        title = "Someone downloaded your dataset!"
+        if profile:
+            body = f"Your dataset {dataset.name()} has been downloaded by {profile.name} {profile.surname}"
+        else:
+            body = f"Your dataset {dataset.name()} has been downloaded by an anonymous user"
+        service = BotService()
+        urls = service.get_on_download_dataset_bot_urls(uploader_id)
+        apprise.send_message(urls, title=title, body=body)
