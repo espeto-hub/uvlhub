@@ -24,9 +24,10 @@ def create_bot():
         return redirect(url_for("public.index"))
 
     form = CreateBotForm()
+    form.user_id.data = profile.user_id
     if request.method == 'POST':
         service = BotService()
-        result, errors = service.create_bot(profile.user_id, form)
+        result, errors = service.create_bot(form)
         return service.handle_service_response(
             result, errors, 'bot.list_bots', 'Bot created successfully', 'bot/create.html', form
         )
