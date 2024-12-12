@@ -69,18 +69,37 @@
 
                 <h1 class="h3 mb-3">Send messages</h1>
 
-                <div class="row form-group">
-
-                    <div class="col-6">
-                        {{ form.on_download_dataset(default="checked", class="form-check-input") }}
-                        {{ form.on_download_dataset.label(class="form-label") }}
-                        {% for error in form.on_download_dataset.errors %}
-                            <span style="color: red;">{{ error }}</span>
-                            <br>
-                        {% endfor %}
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Enabled</th>
+                                <th>Event</th>
+                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        {{ form.on_download_dataset(default="checked", class="form-check-input") }}
+                                    </td>
+                                    <td>
+                                        {{ form.on_download_dataset.label(class="form-label") }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {{ form.on_download_file(default="checked", class="form-check-input") }}
+                                    </td>
+                                    <td>
+                                        {{ form.on_download_file.label(class="form-label") }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-
                 </div>
+
+                <div class="mb-4"></div>
 
                 <div class="row form-group">
                     <div class="col-12 mt-3 d-flex align-items-center gap-2">

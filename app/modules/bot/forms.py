@@ -13,6 +13,7 @@ class BotForm(FlaskForm):
     service_url = wtforms.URLField('URL', validators=[DataRequired()])
     enabled = wtforms.BooleanField('Enabled', default=True)
     on_download_dataset = wtforms.BooleanField('When someone downloads one of my datasets', default=False)
+    on_download_file = wtforms.BooleanField('When someone downloads one of my files', default=False)
     user_id = wtforms.HiddenField()
     test = wtforms.SubmitField('Test')
     is_tested = wtforms.HiddenField(default='false')
