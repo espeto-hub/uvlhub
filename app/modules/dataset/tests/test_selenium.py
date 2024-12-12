@@ -51,7 +51,7 @@ def test_download_all_datasets():
         wait_for_page_to_load(driver)
 
         # Verify that the "Download all dataset" link is present in the navigation bar
-        download_link = driver.find_element(By.XPATH, "//nav//a[text()='Download all dataset']")
+        download_link = driver.find_element(By.LINK_TEXT, "Download all dataset")
         assert download_link.is_displayed(), "Download all dataset link is not displayed in the navigation bar"
 
         print("Test passed!")
