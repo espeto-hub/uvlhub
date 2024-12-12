@@ -97,3 +97,9 @@ class AppriseExtension:
         self.clear()
         message = ' - '.join(message.replace('\n', '').split(' - ')[2:])
         return result, message
+
+    def send_message(self, urls, **kwargs):
+        self.add(urls)
+        result = self.notify(**kwargs)
+        self.clear()
+        return result
