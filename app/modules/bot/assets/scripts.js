@@ -23,3 +23,18 @@ document.addEventListener('DOMContentLoaded', function () {
     // Trigger the change event to load the guide content on page load
     serviceSelect.dispatchEvent(new Event('change'));
 });
+
+function deleteBot(botId) {
+    if (confirm('Are you sure you wish to delete?')) {
+        $.ajax({
+            url: $('#delete_' + botId).attr('action'),
+            type: 'POST',
+            success: function (result) {
+                location.reload();
+            },
+            error: function (xhr, status, error) {
+                alert('An error occurred: ' + xhr.responseText);
+            }
+        });
+    }
+}
