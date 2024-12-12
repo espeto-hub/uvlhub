@@ -1,7 +1,9 @@
+import os
 import re
 
 import apprise
 from apprise import Apprise
+from apprise.asset import AppriseAsset
 
 
 class AppriseExtension:
@@ -11,7 +13,13 @@ class AppriseExtension:
             self.init_app(app)
 
     def init_app(self, app):
-        self.apprise = Apprise()
+        self.apprise = Apprise(asset=AppriseAsset(
+            app_id='UVLHub',
+            app_desc='UVLHub',
+            app_url='https://uvlhub.tail729c.ts.net/',
+            image_path_mask=os.path.join(os.getenv('WORKING_DIR', ''), 'app', 'static', 'img', 'icons',
+                                         'icon-{XY}.{EXTENSION}')
+        ))
 
     def add(self, *args, **kwargs):
         self.apprise.add(*args, **kwargs)
