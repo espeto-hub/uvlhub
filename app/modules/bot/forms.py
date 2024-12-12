@@ -12,7 +12,7 @@ class BotForm(FlaskForm):
     service_name = wtforms.SelectField('Service', choices=apprise.service_names)
     service_url = wtforms.URLField('URL', validators=[DataRequired()])
     enabled = wtforms.BooleanField('Enabled', default=True)
-    on_download_dataset = wtforms.BooleanField('On download dataset', default=False)
+    on_download_dataset = wtforms.BooleanField('When someone downloads one of my datasets', default=False)
     user_id = wtforms.HiddenField()
     test = wtforms.SubmitField('Test')
     is_tested = wtforms.HiddenField(default='false')
