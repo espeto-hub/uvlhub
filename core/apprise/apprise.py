@@ -1,5 +1,6 @@
 import re
 
+import apprise
 from apprise import Apprise
 
 
@@ -87,3 +88,12 @@ class AppriseExtension:
                             return None, f'Unknown token type {token_details["type"]}'
                 return True, None
             return None, 'URL does not match any template'
+
+    def send_test_message(self, urls: str | list[str]):
+        self.add(urls)
+        with apprise.LogCapture(level=apprise.logging.INFO) as logs:
+            result = self.notify(title='Test Notification', body='This is a test notification')
+            message = logs.getvalue()
+        self.clear()
+        message = ' - '.join(message.replace('\n', '').split(' - ')[2:])
+        return result, message
