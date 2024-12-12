@@ -54,7 +54,7 @@ def edit_bot(bot_id):
         return redirect(url_for("public.index"))
 
     service = BotService()
-    bot = service.get_by_id(bot_id)
+    bot = service.get_or_404(bot_id)
     form = BotForm(obj=bot)
     if request.method == 'POST' and form.validate_on_submit():
         if form.test.data:
@@ -80,7 +80,7 @@ def edit_bot(bot_id):
 @login_required
 def delete_bot(bot_id):
     service = BotService()
-    bot = service.get_by_id(bot_id)
+    bot = service.get_or_404(bot_id)
     if not bot:
         return redirect(url_for('bot.list_bots'))
 
