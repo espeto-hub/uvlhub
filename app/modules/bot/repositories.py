@@ -14,3 +14,8 @@ class BotRepository(BaseRepository):
 
     def delete(self, bot):
         return bot.delete()
+
+    def update(self, id, **kwargs):
+        bot = self.get_by_id(id)
+        bot.update(**kwargs)
+        return bot
