@@ -25,11 +25,20 @@ class BotService(BaseService):
             on_download_dataset=form.on_download_dataset.data,
             user_id=form.user_id.data,
         )
-        return created_instance, None
+        return created_instance
 
     def get_by_user_and_name(self, user_id, name):
         return self.repository.get_by_user_and_name(user_id, name)
 
+    def update_bot(self, bot, form):
+        return self.repository.update(
+            bot.id,
+            name=form.name.data,
+            service_name=form.service_name.data,
+            service_url=form.service_url.data,
+            enabled=form.enabled.data,
+            on_download_dataset=form.on_download_dataset.data,
+        )
 
 class BotMessagingService(BaseService):
     def __init__(self):

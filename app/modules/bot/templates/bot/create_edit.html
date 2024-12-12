@@ -11,7 +11,9 @@
     <div class="row">
         <div class="col-12 col-lg-6">
 
-            <form method="POST" action="{{ url_for('bot.create_bot') }}" class="needs-validation" novalidate>
+            <form method="POST"
+                  action="{{ url_for('bot.edit_bot', bot_id=form.id.data) if form.id.data else url_for('bot.create_bot') }}"
+                  class="needs-validation" novalidate>
                 {{ form.hidden_tag() }}
 
                 <h1 class="h3 mb-3">Bot info</h1>
