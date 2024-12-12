@@ -8,9 +8,8 @@
 
     <div class="mb-4"></div>
 
-    <div class="row">
+    <div class="row h-100">
         <div class="col-12 col-lg-6">
-
             <form method="POST"
                   action="{{ url_for('bot.edit_bot', bot_id=form.id.data) if form.id.data else url_for('bot.create_bot') }}"
                   class="needs-validation" novalidate>
@@ -34,7 +33,7 @@
                 <div class="row form-group">
                     <div class="col-6">
                         {{ form.service_name.label(class="form-label") }}
-                        {{ form.service_name(class="form-control", placeholder="schema://example/url", required=true) }}
+                        {{ form.service_name(class="form-control", required=true) }}
                         {% for error in form.service_name.errors %}
                             <span style="color: red;">{{ error }}</span>
                             <br>
@@ -121,9 +120,15 @@
             </form>
 
         </div>
+        <div class="col-12 col-lg-6 h-100">
+            <div class="card">
+                <div class="card-body">
+                    <p class="card-text" id="guide-content">
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
-
-
 {% endblock %}
 
 {% block scripts %}
