@@ -8,8 +8,9 @@
 
     <div class="mb-4"></div>
 
-    <div class="row h-100">
+    <div class="row">
         <div class="col-12 col-lg-6">
+
             <form method="POST"
                   action="{{ url_for('bot.edit_bot', bot_id=form.id.data) if form.id.data else url_for('bot.create_bot') }}"
                   class="needs-validation" novalidate>
@@ -33,7 +34,7 @@
                 <div class="row form-group">
                     <div class="col-6">
                         {{ form.service_name.label(class="form-label") }}
-                        {{ form.service_name(class="form-control", required=true) }}
+                        {{ form.service_name(class="form-control", placeholder="schema://example/url", required=true) }}
                         {% for error in form.service_name.errors %}
                             <span style="color: red;">{{ error }}</span>
                             <br>
@@ -68,37 +69,18 @@
 
                 <h1 class="h3 mb-3">Send messages</h1>
 
-                <div class="card">
-                    <div class="card-body">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th>Enabled</th>
-                                <th>Event</th>
-                            </tr>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        {{ form.on_download_dataset(default="checked", class="form-check-input") }}
-                                    </td>
-                                    <td>
-                                        {{ form.on_download_dataset.label(class="form-label") }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        {{ form.on_download_file(default="checked", class="form-check-input") }}
-                                    </td>
-                                    <td>
-                                        {{ form.on_download_file.label(class="form-label") }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <div class="row form-group">
 
-                <div class="mb-4"></div>
+                    <div class="col-6">
+                        {{ form.on_download_dataset(default="checked", class="form-check-input") }}
+                        {{ form.on_download_dataset.label(class="form-label") }}
+                        {% for error in form.on_download_dataset.errors %}
+                            <span style="color: red;">{{ error }}</span>
+                            <br>
+                        {% endfor %}
+                    </div>
+
+                </div>
 
                 <div class="row form-group">
                     <div class="col-12 mt-3 d-flex align-items-center gap-2">
@@ -116,22 +98,13 @@
                     {% for error in form.test.errors %}
                         <p style="color: red;">{{ error }}</p>
                     {% endfor %}
-                    {% if form.is_tested.data == 'true' %}
-                        <p style="color: green;">Message was successfully sent, please check it arrived.</p>
-                    {% endif %}
                 </div>
             </form>
 
         </div>
-        <div class="col-12 col-lg-6 h-100">
-            <div class="card">
-                <div class="card-body">
-                    <p class="card-text" id="guide-content">
-                    </p>
-                </div>
-            </div>
-        </div>
     </div>
+
+
 {% endblock %}
 
 {% block scripts %}
