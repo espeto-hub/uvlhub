@@ -22,3 +22,6 @@ class BotRepository(BaseRepository):
 
     def get_on_download_dataset_bots(self, user_id):
         return self.model.query.filter_by(user_id=user_id, on_download_dataset=True, enabled=True).all()
+
+    def get_on_download_file_bots(self, user_id):
+        return self.model.query.filter_by(user_id=user_id, on_download_file=True, enabled=True).all()
