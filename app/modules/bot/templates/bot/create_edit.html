@@ -116,6 +116,9 @@
                     {% for error in form.test.errors %}
                         <p style="color: red;">{{ error }}</p>
                     {% endfor %}
+                    {% if form.is_tested.data == 'true' %}
+                        <p style="color: green;">Message was successfully sent, please check it arrived.</p>
+                    {% endif %}
                 </div>
             </form>
 
