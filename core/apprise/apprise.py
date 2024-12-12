@@ -33,7 +33,8 @@ class AppriseExtension:
 
     @property
     def service_names(self):
-        return sorted([str(s['service_name']) for s in self.details()['schemas']])
+        return sorted(
+            [str(s['service_name']) for s in self.details()['schemas'] if self.get_service_schema(s['service_name'])])
 
     def get_service_schema(self, service_name):
         return next((s for s in self.details()['schemas'] if s['service_name'] == service_name), None)
@@ -103,3 +104,53 @@ class AppriseExtension:
         result = self.notify(**kwargs)
         self.clear()
         return result
+
+    def html_guide(self, service_name):
+        service = self.get_service_schema(service_name)
+        if service is None:
+            return f'{service_name} is not a valid service'
+
+        service_details = service['details']
+        html = f'<h1 class="card-title">{service_name}</h1>'
+        html += '<h2>Templates</h2>'
+        html += '<ul>'
+        for schema in service_details['tokens']['schema']['values']:
+            for template in service_details['templates']:
+                html += f'<li>{template.replace('{schema}', schema)}</li>'
+        html += '</ul>'
+        html += '<h2>Tokens</h2>'
+        html += '<table class="table">'
+        html += '<tr><th>Token</th><th>Required</th><th>Type</th><th>Constraints</th></tr>'
+        for token, details in sorted(service_details['tokens'].items(),
+                                     key=lambda x: (not x[1]['required'], x[1]['name'])):
+            if token == 'schema':
+                continue
+            html += f'<tr><td>{details["name"]}</td>'
+            html += f'<td>{"Yes" if details["required"] else "No"}</td>'
+            match details["type"]:
+                case 'int':
+                    html += f'<td>Integer</td>'
+                case 'float':
+                    html += f'<td>Float</td>'
+                case 'string':
+                    html += f'<td>String</td>'
+                case 'list:int':
+                    html += f'<td>List of integers</td>'
+                case 'list:float':
+                    html += f'<td>List of floats</td>'
+                case 'list:string':
+                    html += f'<td>List of strings</td>'
+                case t if 'choice:' in t or 'bool' in t:
+                    html += f'<td>Choice</td>'
+            constraints = []
+            if details.get('min') is not None:
+                constraints.append(f'<strong>Min:</strong> {details["min"]}')
+            if details.get('max') is not None:
+                constraints.append(f'<strong>Max:</strong> {details["max"]}')
+            if details.get('values') is not None:
+                constraints.append(f'<strong>Allowed values:</strong> {", ".join(details["values"])}')
+            if details.get('regex') is not None:
+                constraints.append(f'<strong>Regex:</strong> {details["regex"][0]}')
+            html += f'<td>{"<br>".join(constraints) if constraints else "-"}</td></tr>'
+        html += '</table>'
+        return html
