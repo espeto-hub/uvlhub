@@ -16,6 +16,11 @@ class Bot(db.Model):
         db.UniqueConstraint('name', 'user_id', name='unique_name'),
     )
 
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        db.session.commit()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()

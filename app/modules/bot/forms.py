@@ -6,7 +6,8 @@ from app import apprise
 from app.modules.bot.services import BotService
 
 
-class CreateBotForm(FlaskForm):
+class BotForm(FlaskForm):
+    id = wtforms.HiddenField()
     name = wtforms.StringField('Name', validators=[DataRequired(), Length(min=3, max=50)])
     service_name = wtforms.SelectField('Service', choices=apprise.service_names)
     service_url = wtforms.URLField('URL', validators=[DataRequired()])
@@ -23,7 +24,8 @@ class CreateBotForm(FlaskForm):
             raise wtforms.ValidationError(str(error))
 
     def validate_name(self, field):
-        service = BotService()
-        bot = service.get_by_user_and_name(user_id=self.user_id.data, name=field.data)
-        if bot:
-            raise wtforms.ValidationError('Bot with this name already exists')
+        if not self.id:
+            service = BotService()
+            bot = service.get_by_user_and_name(user_id=self.user_id.data, name=field.data)
+            if bot:
+                raise wtforms.ValidationError('Bot with this name already exists')

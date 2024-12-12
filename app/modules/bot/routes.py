@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 
 from app.modules.auth.services import AuthenticationService
 from app.modules.bot import bot_bp
-from app.modules.bot.forms import CreateBotForm
+from app.modules.bot.forms import BotForm
 from app.modules.bot.services import BotService, BotMessagingService
 
 
@@ -22,7 +22,7 @@ def create_bot():
     if not profile:
         return redirect(url_for("public.index"))
 
-    form = CreateBotForm()
+    form = BotForm()
     form.user_id.data = profile.user_id
     if request.method == 'POST' and form.validate_on_submit():
         service = BotService()
@@ -35,24 +35,45 @@ def create_bot():
             else:
                 form.is_tested.data = 'false'
                 form.test.errors.append(message)
-            return render_template('bot/create.html', form=form)
+            return render_template('bot/create_edit.html', form=form)
         elif form.submit.data:
-            result, errors = service.create_bot(form)
+            result = service.create_bot(form)
             return service.handle_service_response(
-                result, errors, 'bot.list_bots', 'Bot created successfully', 'bot/create.html', form
+                result, None, 'bot.list_bots', 'Bot created successfully', 'bot/create_edit.html', form
             )
 
-    return render_template('bot/create.html', form=form)
+    return render_template('bot/create_edit.html', form=form)
 
 
 @bot_bp.route('/bots/edit/<int:bot_id>', methods=['GET', 'POST'])
 @login_required
 def edit_bot(bot_id):
-    bot = BotService().get_by_id(bot_id)
-    if not bot:
-        return redirect(url_for('bot.list_bots'))
+    auth_service = AuthenticationService()
+    profile = auth_service.get_authenticated_user_profile()
+    if not profile:
+        return redirect(url_for("public.index"))
 
-    return render_template('bot/edit.html', bot=bot)
+    service = BotService()
+    bot = service.get_by_id(bot_id)
+    form = BotForm(obj=bot)
+    if request.method == 'POST' and form.validate_on_submit():
+        if form.test.data:
+            message_service = BotMessagingService()
+            url = form.service_url.data
+            result, message = message_service.send_test_message(url)
+            if result:
+                form.is_tested.data = 'true'
+            else:
+                form.is_tested.data = 'false'
+                form.test.errors.append(message)
+            return render_template('bot/create_edit.html', form=form)
+        elif form.submit.data:
+            result = service.update_bot(bot, form)
+            return service.handle_service_response(
+                result, None, 'bot.list_bots', 'Bot created successfully', 'bot/create_edit.html', form
+            )
+
+    return render_template('bot/create_edit.html', form=form)
 
 
 @bot_bp.route('/bots/delete/<int:bot_id>', methods=['POST'])
