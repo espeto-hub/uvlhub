@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Length
 
 from app import apprise
+from app.modules.bot.services import BotService
 
 
 class CreateBotForm(FlaskForm):
@@ -11,9 +12,16 @@ class CreateBotForm(FlaskForm):
     service_url = wtforms.URLField('URL', validators=[DataRequired()])
     enabled = wtforms.BooleanField('Enabled', default=True)
     on_download_dataset = wtforms.BooleanField('On download dataset', default=False)
+    user_id = wtforms.HiddenField()
     submit = wtforms.SubmitField('Save')
 
     def validate_service_url(self, field):
         is_valid, error = apprise.is_url_valid(field.data, self.service_name.data)
         if not is_valid:
             raise wtforms.ValidationError(str(error))
+
+    def validate_name(self, field):
+        service = BotService()
+        bot = service.get_by_user_and_name(user_id=self.user_id.data, name=field.data)
+        if bot:
+            raise wtforms.ValidationError('Bot with this name already exists')
