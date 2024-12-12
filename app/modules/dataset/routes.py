@@ -24,15 +24,16 @@ from app.modules.auth.services import AuthenticationService
 from app.modules.bot.services import BotMessagingService
 from app.modules.dataset import dataset_bp
 from app.modules.dataset.forms import DataSetForm
-from app.modules.dataset.models import DSDownloadRecord
-from app.modules.dataset import dataset_bp
+from app.modules.dataset.models import (
+    DSDownloadRecord
+)
 from app.modules.dataset.services import (
     AuthorService,
     DSDownloadRecordService,
     DSMetaDataService,
     DSViewRecordService,
     DataSetService,
-    DOIMappingService,
+    DOIMappingService
 )
 from app.modules.zenodo.services import ZenodoService
 
@@ -52,6 +53,7 @@ ds_view_record_service = DSViewRecordService()
 def create_dataset():
     form = DataSetForm()
     if request.method == "POST":
+
         dataset = None
 
         if not form.validate_on_submit():
@@ -198,12 +200,16 @@ def download_dataset(dataset_id):
 
                 zipf.write(
                     full_path,
-                    arcname=os.path.join(os.path.basename(zip_path[:-4]), relative_path),
+                    arcname=os.path.join(
+                        os.path.basename(zip_path[:-4]), relative_path
+                    ),
                 )
 
     user_cookie = request.cookies.get("download_cookie")
     if not user_cookie:
-        user_cookie = str(uuid.uuid4())  # Generate a new unique identifier if it does not exist
+        user_cookie = str(
+            uuid.uuid4()
+        )  # Generate a new unique identifier if it does not exist
         # Save the cookie to the user's browser
         resp = make_response(
             send_from_directory(
@@ -226,7 +232,7 @@ def download_dataset(dataset_id):
     existing_record = DSDownloadRecord.query.filter_by(
         user_id=current_user.id if current_user.is_authenticated else None,
         dataset_id=dataset_id,
-        download_cookie=user_cookie,
+        download_cookie=user_cookie
     ).first()
 
     if not existing_record:
@@ -255,6 +261,7 @@ def download_all_dataset():
 
 @dataset_bp.route("/doi/<path:doi>/", methods=["GET"])
 def subdomain_index(doi):
+
     # Check if the DOI is an old DOI
     new_doi = doi_mapping_service.get_new_doi(doi)
     if new_doi:
@@ -281,6 +288,7 @@ def subdomain_index(doi):
 @dataset_bp.route("/dataset/unsynchronized/<int:dataset_id>/", methods=["GET"])
 @login_required
 def get_unsynchronized_dataset(dataset_id):
+
     # Get dataset
     dataset = dataset_service.get_unsynchronized_dataset(current_user.id, dataset_id)
 
