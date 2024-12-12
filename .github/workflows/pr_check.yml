@@ -2,7 +2,7 @@ name: Check PR attributes
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
+    types: [opened, edited, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
     branches:
       - main
 
