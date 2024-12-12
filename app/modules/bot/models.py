@@ -8,6 +8,7 @@ class Bot(db.Model):
     service_url = db.Column(db.String(1024), nullable=False)
     enabled = db.Column(db.Boolean, default=True)
     on_download_dataset = db.Column(db.Boolean, default=False)
+    on_download_file = db.Column(db.Boolean, default=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='bots', lazy=True)

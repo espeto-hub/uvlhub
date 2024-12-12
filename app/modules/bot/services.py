@@ -23,6 +23,7 @@ class BotService(BaseService):
             service_url=form.service_url.data,
             enabled=form.enabled.data,
             on_download_dataset=form.on_download_dataset.data,
+            on_download_file=form.on_download_file.data,
             user_id=form.user_id.data,
         )
         return created_instance
@@ -38,10 +39,14 @@ class BotService(BaseService):
             service_url=form.service_url.data,
             enabled=form.enabled.data,
             on_download_dataset=form.on_download_dataset.data,
+            on_download_file=form.on_download_file.data,
         )
 
     def get_on_download_dataset_bot_urls(self, uploader_id):
         return [b.service_url for b in self.repository.get_on_download_dataset_bots(uploader_id)]
+
+    def get_on_download_file_bot_urls(self, uploader_id):
+        return [b.service_url for b in self.repository.get_on_download_file_bots(uploader_id)]
 
 
 class BotMessagingService(BaseService):
@@ -67,4 +72,21 @@ class BotMessagingService(BaseService):
             body = f" by an anonymous user"
         service = BotService()
         urls = service.get_on_download_dataset_bot_urls(uploader_id)
+        apprise.send_message(urls, title=title, body=body)
+
+    @staticmethod
+    def on_download_file(file, profile, format='UVL'):
+        uploader_id = file.feature_model.data_set.user_id
+        downloader_id = profile.user_id if profile else None
+        if uploader_id == downloader_id:
+            return
+
+        title = "Someone downloaded your file!"
+        body = f"Your file '{file.name}' from the dataset {file.feature_model.data_set.name()} has been downloaded in {format} format"
+        if profile:
+            body += f" by {profile.name} {profile.surname}"
+        else:
+            body = f" by an anonymous user"
+        service = BotService()
+        urls = service.get_on_download_file_bot_urls(uploader_id)
         apprise.send_message(urls, title=title, body=body)
