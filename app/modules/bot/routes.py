@@ -1,6 +1,9 @@
+from urllib.parse import unquote
+
 from flask import render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 
+from app import apprise
 from app.modules.auth.services import AuthenticationService
 from app.modules.bot import bot_bp
 from app.modules.bot.forms import BotForm
@@ -86,3 +89,10 @@ def delete_bot(bot_id):
 
     service.delete(bot)
     return redirect(url_for('bot.list_bots'))
+
+
+@bot_bp.route('/bots/guide/<service_name>', methods=['GET'])
+@login_required
+def guide(service_name):
+    service_name = unquote(service_name)
+    return apprise.html_guide(service_name)
