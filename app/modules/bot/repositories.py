@@ -11,3 +11,6 @@ class BotRepository(BaseRepository):
 
     def get_by_user_and_name(self, user_id, name):
         return self.model.query.filter_by(user_id=user_id, name=name).first()
+
+    def delete(self, bot):
+        return bot.delete()
