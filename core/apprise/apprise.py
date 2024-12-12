@@ -161,4 +161,6 @@ class AppriseExtension:
                 constraints.append(f'<strong>Regex:</strong> {details["regex"][0]}')
             html += f'<td>{"<br>".join(constraints) if constraints else "-"}</td></tr>'
         html += '</table>'
+        html += '<h2>Information</h2>'
+        html += f"<p>For obtaining the required tokens, visit the <a href='{service["service_url"]}' target='_blank'>service's page</a>.<br>For more parameters and examples, visit the <a href='{service["setup_url"]}' target='_blank'>documentation</a>.</p>"
         return html
