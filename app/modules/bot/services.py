@@ -16,7 +16,7 @@ class BotService(BaseService):
     def delete(self, bot):
         return self.repository.delete(bot)
 
-    def create_bot(self, user_id, form):
+    def create_bot(self, form):
         if form.validate():
             created_instance = self.create(
                 name=form.name.data,
@@ -24,8 +24,11 @@ class BotService(BaseService):
                 service_url=form.service_url.data,
                 enabled=form.enabled.data,
                 on_download_dataset=form.on_download_dataset.data,
-                user_id=user_id,
+                user_id=form.user_id.data,
             )
             return created_instance, None
 
         return None, form.errors
+
+    def get_by_user_and_name(self, user_id, name):
+        return self.repository.get_by_user_and_name(user_id, name)

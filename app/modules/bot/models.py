@@ -12,6 +12,10 @@ class Bot(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='bots', lazy=True)
 
+    __table_args__ = (
+        db.UniqueConstraint('name', 'user_id', name='unique_name'),
+    )
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
