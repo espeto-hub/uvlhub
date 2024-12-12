@@ -32,6 +32,11 @@ class DatasetBehavior(TaskSet):
         self.client.get(f"/dataset/search?query={query}")
         print(f"Searched datasets with query: {query}")
 
+    # Test de carga para Download all datasets
+    @task
+    def download_all_datasets(self):
+        self.client.get("/dataset/download/all")
+
 
 class DatasetUser(HttpUser):
     tasks = [DatasetBehavior]
