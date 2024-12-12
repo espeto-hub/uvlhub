@@ -43,14 +43,16 @@
                                 </td>
                                 <td>
                                     <a href="{{ url_for('bot.edit_bot', bot_id=bot.id) }}">
-                                        <i data-feather="settings"></i>
+                                        <i data-feather="edit"></i>
                                     </a>
-                                    <form action="{{ url_for('bot.delete_bot', bot_id=bot.id) }}" method="post"
+                                    <form id='delete_{{ bot.id }}'
+                                          action="{{ url_for('bot.delete_bot', bot_id=bot.id) }}" method="post"
                                           onsubmit="return confirm('Are you sure you wish to delete?');"
                                           class="d-inline">
-                                        <button type="submit" class="btn btn-link text-danger">
+                                        <a href="javascript:$('#delete_{{ bot.id }}').submit();" class="text-danger">
                                             <i data-feather="trash-2"></i>
-                                        </button>
+                                        </a>
+                                    </form>
                                 </td>
                             </tr>
                         {% endfor %}
