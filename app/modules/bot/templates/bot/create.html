@@ -81,9 +81,21 @@
                 </div>
 
                 <div class="row form-group">
-                    <div class="col-12 mt-3">
-                        {{ form.submit(class="btn btn-primary") }}
+                    <div class="col-12 mt-3 d-flex align-items-center gap-2">
+                        {{ form.submit(class="btn btn-primary", id="save-button", disabled=form.is_tested.data == 'false') }}
+                        {{ form.test(class="btn btn-primary", id="test-button", disabled=form.is_tested.data == 'true') }}
+                        {% if form.test.errors %}
+                            <span style="color: red; font-size: 1.5em;">✖</span>
+                        {% elif form.is_tested.data == 'true' %}
+                            <span style="color: green; font-size: 1.5em;">✔</span>
+                        {% endif %}
                     </div>
+                </div>
+                <div class="mb-4"></div>
+                <div class="row form-group d-flex align-items-center">
+                    {% for error in form.test.errors %}
+                        <p style="color: red;">{{ error }}</p>
+                    {% endfor %}
                 </div>
             </form>
 
