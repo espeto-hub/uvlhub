@@ -54,4 +54,3 @@ def test_user_profile_page_get(test_client):
     assert response.status_code == 200, f"The profile page for user {user.id} could not be accessed."
 
     logout(test_client)
-
