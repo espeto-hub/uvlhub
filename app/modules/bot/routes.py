@@ -116,5 +116,12 @@ def delete_bot(bot_id):
 @bot_bp.route('/bots/guide/<service_name>', methods=['GET'])
 @login_required
 def guide(service_name):
+    auth_service = AuthenticationService()
+    profile = auth_service.get_authenticated_user_profile()
+    if not profile:
+        return redirect(url_for("public.index"))
+
     service_name = unquote(service_name)
+    if service_name not in apprise.service_names:
+        abort(404)
     return apprise.html_guide(service_name)
