@@ -4,6 +4,9 @@ import re
 import apprise
 from apprise import Apprise
 from apprise.asset import AppriseAsset
+from faker import Faker
+
+from core.faker.faker import RegexProvider
 
 
 class AppriseExtension:
@@ -11,6 +14,8 @@ class AppriseExtension:
         self.apprise = None
         if app is not None:
             self.init_app(app)
+        self.faker = Faker()
+        self.faker.add_provider(RegexProvider)
 
     def init_app(self, app):
         self.apprise = Apprise(asset=AppriseAsset(
@@ -129,10 +134,58 @@ class AppriseExtension:
         self.clear()
         return result
 
-    def html_guide(self, service_name):
+    def generate_url_example(self, service_name):
         service = self.get_service_schema(service_name)
         if service is None:
             return f'{service_name} is not a valid service'
+
+        service_details = service['details']
+        example = self.faker.random_element(service_details['templates'])
+        for token, details in service_details['tokens'].items():
+            match details["type"]:
+                case 'int':
+                    example = example.replace(f'{{{token}}}', str(self.faker.random_int(min=details.get('min', 0),
+                                                                                        max=details.get('max', 100))))
+                case 'float':
+                    example = example.replace(f'{{{token}}}', str(self.faker.pyfloat(min_value=details.get('min', 0.0),
+                                                                                     max_value=details.get('max',
+                                                                                                           100.0))))
+                case 'string':
+                    if details.get('regex') is not None:
+                        example = example.replace(f'{{{token}}}', self.faker.regex(details['regex'][0]))
+                    else:
+                        example = example.replace(f'{{{token}}}', self.faker.pystr(min_chars=5, max_chars=20))
+                case 'bool':
+                    example = example.replace(f'{{{token}}}', self.faker.random_element(['true', 'false']))
+                case 'list:int':
+                    delimiter = self.faker.random_element(details.get('delim', [',']))
+                    example = example.replace(f'{{{token}}}', delimiter.join(
+                        str(self.faker.random_int(min=details.get('min', 0), max=details.get('max', 100))) for _ in
+                        range(self.faker.random_int(min=1, max=3))))
+                case 'list:float':
+                    delimiter = self.faker.random_element(details.get('delim', [',']))
+                    example = example.replace(f'{{{token}}}', delimiter.join(
+                        str(self.faker.pyfloat(min_value=details.get('min', 0.0), max_value=details.get('max', 100.0)))
+                        for
+                        _ in range(self.faker.random_int(min=1, max=3))))
+                case 'list:string':
+                    delimiter = self.faker.random_element(details.get('delim', [',']))
+                    if details.get('regex') is not None:
+                        example = example.replace(f'{{{token}}}', delimiter.join(
+                            self.faker.regex(details['regex'][0]) for _ in range(self.faker.random_int(min=1, max=3))))
+                    else:
+                        example = example.replace(f'{{{token}}}', delimiter.join(
+                            self.faker.pystr(min_chars=5, max_chars=20) for _ in
+                            range(self.faker.random_int(min=1, max=3)))
+                                                  )
+                case t if 'choice:' in t:
+                    example = example.replace(f'{{{token}}}', self.faker.random_element(details['values']))
+        return example
+
+    def html_guide(self, service_name):
+        service = self.get_service_schema(service_name)
+        if service is None:
+            return f'{service_name} has no documentation available'
 
         service_details = service['details']
         html = f'<h1 class="card-title">{service_name}</h1>'
@@ -177,6 +230,11 @@ class AppriseExtension:
                 constraints.append(f'<strong>Regex:</strong> {details["regex"][0]}')
             html += f'<td>{"<br>".join(constraints) if constraints else "-"}</td></tr>'
         html += '</table>'
+        html += '<h2>Examples</h2>'
+        html += '<ul>'
+        for _ in range(3):
+            html += f'<li>{self.generate_url_example(service_name)}</li>'
+        html += '</ul>'
         html += '<h2>Information</h2>'
         html += f"<p>For obtaining the required tokens, visit the <a href='{service["service_url"]}' target='_blank'>service's page</a>.<br>For more parameters and examples, visit the <a href='{service["setup_url"]}' target='_blank'>documentation</a>.</p>"
         return html
