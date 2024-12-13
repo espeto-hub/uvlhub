@@ -78,7 +78,7 @@ def users(request, faker, user_generator, profile_generator):
             profile = profile_generator(user)
             db.session.add(profile)
             db.session.commit()
-            users.append((user, profile, password))
+            users.append([user, profile, password])
 
         yield users
 
@@ -91,12 +91,39 @@ def users(request, faker, user_generator, profile_generator):
 
 
 @pytest.fixture(scope="class")
+def users_with_bots(request, users, bot_generator):
+    if hasattr(request, "param"):
+        request = request.param
+
+        for user_details in users:
+            user, _, _ = user_details
+            user_details.append([])
+            for i in range(request):
+                bot = bot_generator(user)
+                db.session.add(bot)
+                user_details[3].append(bot)
+        db.session.commit()
+
+        yield users
+
+        for i, user in enumerate(users):
+            _, _, _, bots = user
+            for bot in bots:
+                db.session.delete(bot)
+            user.remove(bots)
+        db.session.commit()
+    else:
+        yield None
+
+
+@pytest.fixture(scope="class")
 def logged_in_client(request, test_client, users):
     """
     Extends the test_client fixture to add additional specific data for module testing.
     """
     user_index = request.param
-    user, _, password = users[user_index]
+    user = users[user_index][0]
+    password = users[user_index][2]
     login(test_client, user.email, password)
     response = test_client.get("/profile/summary")
 
@@ -301,7 +328,7 @@ class TestBotCreate:
         )
 
         assert response.status_code == 200
-        assert b"Bot with this name already exists" in response.data
+        assert b"This name is already in use" in response.data
         assert db.session.query(Bot).filter_by(user_id=users[0][0].id).count() == 1
 
         db.session.query(Bot).filter_by(user_id=users[0][0].id).delete()
@@ -329,3 +356,204 @@ class TestBotCreate:
         assert response.status_code == 200
         assert b"Please test the bot first" in response.data
         assert db.session.query(Bot).filter_by(user_id=users[0][0].id).count() == 0
+
+
+@pytest.mark.parametrize("users", [2], indirect=True)
+@pytest.mark.parametrize("users_with_bots", [2], indirect=True)
+class TestBotEdit:
+    def test_edit_not_logged_in(self, test_client, users_with_bots):
+        response = test_client.get("/bots/edit/1")
+        assert response.status_code == 302
+        assert response.headers["Location"] == "/login?next=%2Fbots%2Fedit%2F1"
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_edit_get_mine(self, logged_in_client, users_with_bots):
+        for bot in users_with_bots[0][3]:
+            response = logged_in_client.get(f"/bots/edit/{bot.id}")
+
+            assert response.status_code == 200
+            assert b"Edit bot" in response.data
+            assert bot.name.encode() in response.data
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_edit_get_others(self, logged_in_client, users_with_bots):
+        for user_with_bot in users_with_bots[1:]:
+            for bot in user_with_bot[3]:
+                response = logged_in_client.get(f"/bots/edit/{bot.id}")
+
+                assert response.status_code == 403
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_edit_get_empty(self, logged_in_client, users_with_bots):
+        response = logged_in_client.get("/bots/edit")
+
+        assert response.status_code == 404
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_edit_get_invalid(self, logged_in_client, users_with_bots):
+        response = logged_in_client.get("/bots/edit/" + fk.pystr(max_chars=5))
+
+        assert response.status_code == 404
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_edit_post_empty(self, logged_in_client, users_with_bots):
+        for bot in users_with_bots[0][3]:
+            response = logged_in_client.post(f"/bots/edit/{bot.id}", data={
+                'name': '',
+                'service_name': '',
+                'service_url': '',
+                'enabled': '',
+                'on_download_dataset': '',
+                'on_download_file': '',
+                'is_tested': 'true',
+                'test': 'false',
+                'submit': 'true',
+            })
+
+            assert response.status_code == 200
+            assert b"Edit bot" in response.data
+            assert b"Please input a name" in response.data
+            assert b"Please select a service" in response.data
+            assert b"Please input an URL" in response.data
+
+    valid_bots = [
+        pytest.param(
+            {"name": fk.pystr(min_chars=3, max_chars=50)},
+            id="edit_name",
+        ),
+        pytest.param(
+            {
+                "service_name": "Discord",
+                "service_url": "discord://1234567890/abcdef",
+            },
+            id="edit_service_name_and_url",
+        ),
+    ]
+
+    @pytest.mark.parametrize("logged_in_client", [1], indirect=True)
+    @pytest.mark.parametrize("bot_kwargs", valid_bots)
+    def test_edit_post_valid(self, logged_in_client, users_with_bots, bot_kwargs):
+        bot = fk.random_element(users_with_bots[1][3])
+        response = logged_in_client.post(
+            f"/bots/edit/{bot.id}",
+            data=bot_kwargs | {
+                'is_tested': 'true',
+                'test': 'false',
+                'submit': 'true',
+            },
+            follow_redirects=True
+        )
+        assert response.status_code == 200
+        assert b"Bot edited successfully" in response.data
+        for key, value in bot_kwargs.items():
+            assert str(getattr(db.session.query(Bot).get(bot.id), key)) == value
+
+    invalid_bots = [
+        pytest.param(
+            {"name": ""},
+            b"Please input a name.",
+            id="edit_name_empty",
+        ),
+        pytest.param(
+            {"name": fk.pystr(max_chars=2)},
+            b"Field must be between 3 and 50 characters long.",
+            id="edit_name_too_short",
+        ),
+        pytest.param(
+            {"name": fk.pystr(min_chars=51, max_chars=55)},
+            b"Field must be between 3 and 50 characters long.",
+            id="edit_name_too_long",
+        ),
+        pytest.param(
+            {"service_name": "", "service_url": ""},
+            b"Please select a service",
+            id="edit_service_name_not_selected",
+        ),
+        pytest.param(
+            {"service_name": "Select one...", "service_url": ""},
+            b"Please select a service",
+            id="edit_service_name_not_selected",
+        ),
+        pytest.param(
+            {"service_name": fk.pystr(), "service_url": ""},
+            b"Not a valid choice",
+            id="edit_service_name_not_a_choice",
+        ),
+        pytest.param(
+            {"service_url": ""},
+            b"Please input an URL.",
+            id="edit_service_url_empty",
+        ),
+        pytest.param(
+            {"service_url": fk.pystr()},
+            b"URL does not match any template",
+            id="edit_service_url_random",
+        ),
+    ]
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    @pytest.mark.parametrize("bot_kwargs,error_message", invalid_bots)
+    def test_edit_post_invalid(self, logged_in_client, users_with_bots, bot_kwargs, error_message):
+        bot = fk.random_element(users_with_bots[0][3])
+        response = logged_in_client.post(
+            f"/bots/edit/{bot.id}",
+            data=bot_kwargs | {
+                'is_tested': 'true',
+                'test': 'false',
+                'submit': 'true',
+            },
+            follow_redirects=True
+        )
+
+        assert response.status_code == 200
+        assert error_message in response.data
+        for key, value in bot_kwargs.items():
+            assert str(getattr(db.session.query(Bot).get(bot.id), key)) != value
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_edit_post_existing_name(self, logged_in_client, users_with_bots):
+        bot = users_with_bots[0][3][0]
+        other_bot = users_with_bots[0][3][1]
+        response = logged_in_client.post(
+            f"/bots/edit/{bot.id}",
+            data={
+                'name': other_bot.name,
+                'service_name': bot.service_name,
+                'service_url': bot.service_url,
+                'enabled': str(bot.enabled).lower(),
+                'on_download_dataset': str(bot.on_download_dataset).lower(),
+                'on_download_file': str(bot.on_download_file).lower(),
+                'is_tested': 'true',
+                'test': 'false',
+                'submit': 'true',
+            },
+            follow_redirects=True
+        )
+
+        assert response.status_code == 200
+        assert b"This name is already in use" in response.data
+        assert db.session.query(Bot).filter_by(name=bot.name).count() == 1
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_edit_post_not_tested(self, logged_in_client, users_with_bots):
+        bot = users_with_bots[0][3][0]
+        new_name = fk.pystr(min_chars=3, max_chars=50)
+        response = logged_in_client.post(
+            f"/bots/edit/{bot.id}",
+            data={
+                'name': new_name,
+                'service_name': bot.service_name,
+                'service_url': bot.service_url,
+                'enabled': str(bot.enabled).lower(),
+                'on_download_dataset': str(bot.on_download_dataset).lower(),
+                'on_download_file': str(bot.on_download_file).lower(),
+                'is_tested': 'false',
+                'test': 'false',
+                'submit': 'true',
+            },
+            follow_redirects=True
+        )
+
+        assert response.status_code == 200
+        assert b"Please test the bot first" in response.data
+        assert db.session.query(Bot).get(bot.id).name != new_name
