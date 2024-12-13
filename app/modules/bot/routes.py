@@ -1,6 +1,6 @@
 from urllib.parse import unquote
 
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, abort
 from flask_login import login_required, current_user
 
 from app import apprise
@@ -61,6 +61,8 @@ def edit_bot(bot_id):
 
     service = BotService()
     bot = service.get_or_404(bot_id)
+    if bot.user_id != profile.user_id:
+        abort(403)
     form = BotForm(obj=bot)
     if request.method == 'POST' and form.validate_on_submit():
         if form.test.data:
