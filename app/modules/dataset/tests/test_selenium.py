@@ -82,3 +82,47 @@ def test_rate_dataset():
 
 
 test_rate_dataset()
+
+
+
+def test_rate_without_login():
+    driver = initialize_driver()
+
+    try:
+        # Configurar la URL del dataset
+        host = get_host_for_selenium_testing()
+        dataset_id = 4  # Ajusta al ID del dataset que necesitas probar
+        dataset_url = f"{host}/dataset/{dataset_id}/rate"
+
+        # Navegar a la página del dataset (sin iniciar sesión)
+        driver.get(dataset_url)
+
+        # Asegurarse de que la página esté completamente cargada
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
+
+        # Hacer clic en el botón de enviar calificación
+        send_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']"))
+        )
+        send_button.click()
+
+        # Esperar a que ocurra la redirección
+        WebDriverWait(driver, 10).until(
+            EC.url_contains("/login")
+        )
+
+        # Verificar que se redirigió a la página de inicio de sesión
+        assert "login" in driver.current_url, "No se redirigió a la página de inicio de sesión"
+        assert "next=%2Fdataset%2F4%2Frate" in driver.current_url, "El parámetro 'next' no es correcto"
+
+        print("Prueba exitosa: Redirección a inicio de sesión confirmada.")
+
+    except TimeoutException as e:
+        print(f"Timeout occurred: {e}")
+        driver.save_screenshot("login_redirect_error.png")
+    finally:
+        driver.quit()
+
+test_rate_without_login()
