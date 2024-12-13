@@ -48,7 +48,7 @@ class BotService(BaseService):
     def get_on_download_file_bot_urls(self, uploader_id):
         return [b.service_url for b in self.repository.get_on_download_file_bots(uploader_id)]
 
-    def is_bot_name_unique(self, data, bot_id):
+    def is_bot_name_unique(self, data, bot_id=None):
         return self.repository.is_bot_name_unique(data, bot_id)
 
 

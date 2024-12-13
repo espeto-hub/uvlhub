@@ -43,6 +43,9 @@ def create_bot():
             if form.is_tested.data == 'false':
                 form.test.errors.append('Please test the bot first')
                 return render_template('bot/create_edit.html', form=form, title='Create bot')
+            if not service.is_bot_name_unique(form.name.data):
+                form.name.errors.append('This name is already in use')
+                return render_template('bot/create_edit.html', form=form, title='Edit bot')
             result = service.create_bot(form)
             return service.handle_service_response(
                 result, None, 'bot.list_bots', 'Bot created successfully', 'bot/create_edit.html', form

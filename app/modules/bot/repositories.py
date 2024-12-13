@@ -26,5 +26,5 @@ class BotRepository(BaseRepository):
     def get_on_download_file_bots(self, user_id):
         return self.model.query.filter_by(user_id=user_id, on_download_file=True, enabled=True).all()
 
-    def is_bot_name_unique(self, data, bot_id):
-        return not self.model.query.filter_by(name=data).filter(self.model.id != bot_id).first()
+    def is_bot_name_unique(self, data, bot_id=None):
+        return not self.model.query.filter_by(name=data).filter(Bot.id != bot_id).first()
