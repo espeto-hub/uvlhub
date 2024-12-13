@@ -1,7 +1,9 @@
+from unittest.mock import patch
+
 import pytest
 from faker import Faker
 
-from app import create_app, db
+from app import create_app, db, apprise
 from app.modules.auth.models import User
 from core.faker.faker import RegexProvider
 
@@ -49,7 +51,9 @@ def test_client(test_app):
             print("Rutas registradas:")
             for rule in test_app.url_map.iter_rules():
                 print(rule)
-            yield testing_client
+
+            with patch.object(apprise, 'faker', faker):
+                yield testing_client
 
             db.session.remove()
             db.drop_all()
