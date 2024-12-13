@@ -9,7 +9,8 @@ from app.modules.bot.services import BotService
 class BotForm(FlaskForm):
     id = wtforms.HiddenField()
     name = wtforms.StringField('Name', validators=[DataRequired(), Length(min=3, max=50)])
-    service_name = wtforms.SelectField('Service', choices=['Select one...'] + apprise.service_names)
+    service_name = wtforms.SelectField('Service', choices=['Select one...'] + apprise.service_names,
+                                       validators=[DataRequired()])
     service_url = wtforms.URLField('URL', validators=[DataRequired()])
     enabled = wtforms.BooleanField('Enabled', default=True)
     on_download_dataset = wtforms.BooleanField('When someone downloads one of my datasets', default=False)
