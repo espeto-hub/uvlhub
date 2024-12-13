@@ -7,13 +7,12 @@ from core.selenium.common import initialize_driver, close_driver
 
 
 def test_fakenodo_connection():
-
     driver = initialize_driver()
 
     try:
         host = get_host_for_selenium_testing()
 
-        driver.get(f'{host}/fakenodo/api')
+        driver.get(f"{host}/fakenodo/api")
 
         time.sleep(3)
 
@@ -23,7 +22,9 @@ def test_fakenodo_connection():
             assert "You have successfully connected to Fakenodo" in body_text
 
         except NoSuchElementException:
-            raise AssertionError("El cuerpo de la página no contiene el mensaje esperado.")
+            raise AssertionError(
+                "El cuerpo de la página no contiene el mensaje esperado."
+            )
 
     finally:
         close_driver(driver)

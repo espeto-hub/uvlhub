@@ -20,7 +20,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 
-def create_app(config_name='development'):
+def create_app(config_name="development"):
     app = Flask(__name__)
 
     # Load configuration according to environment
@@ -37,6 +37,7 @@ def create_app(config_name='development'):
 
     # Register login manager
     from flask_login import LoginManager
+
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
@@ -44,6 +45,7 @@ def create_app(config_name='development'):
     @login_manager.user_loader
     def load_user(user_id):
         from app.modules.auth.models import User
+
         return User.query.get(int(user_id))
 
     # Set up logging
@@ -58,10 +60,10 @@ def create_app(config_name='development'):
     @app.context_processor
     def inject_vars_into_jinja():
         return {
-            'FLASK_APP_NAME': os.getenv('FLASK_APP_NAME'),
-            'FLASK_ENV': os.getenv('FLASK_ENV'),
-            'DOMAIN': os.getenv('DOMAIN', 'localhost'),
-            'APP_VERSION': get_app_version()
+            "FLASK_APP_NAME": os.getenv("FLASK_APP_NAME"),
+            "FLASK_ENV": os.getenv("FLASK_ENV"),
+            "DOMAIN": os.getenv("DOMAIN", "localhost"),
+            "APP_VERSION": get_app_version(),
         }
 
     return app

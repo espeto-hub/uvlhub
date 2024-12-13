@@ -52,12 +52,13 @@ def test_download_all_datasets():
 
         # Verify that the "Download all dataset" link is present in the navigation bar
         download_link = driver.find_element(By.LINK_TEXT, "Download all dataset")
-        assert download_link.is_displayed(), "Download all dataset link is not displayed in the navigation bar"
+        assert (
+            download_link.is_displayed()
+        ), "Download all dataset link is not displayed in the navigation bar"
 
         print("Test passed!")
 
     finally:
-
         # Close the browser
         close_driver(driver)
 
@@ -143,7 +144,9 @@ def test_upload_dataset():
 
         name_field = driver.find_element(By.NAME, "feature_models-0-authors-2-name")
         name_field.send_keys("Author3")
-        affiliation_field = driver.find_element(By.NAME, "feature_models-0-authors-2-affiliation")
+        affiliation_field = driver.find_element(
+            By.NAME, "feature_models-0-authors-2-affiliation"
+        )
         affiliation_field.send_keys("Club3")
 
         # Check I agree and send form
@@ -165,7 +168,6 @@ def test_upload_dataset():
         print("Test passed!")
 
     finally:
-
         # Close the browser
         close_driver(driver)
 
