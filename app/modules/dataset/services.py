@@ -288,10 +288,8 @@ class RatingService:
 
         try:
             self.db.commit()
-            flash("Gracias por calificar el dataset!", "success")
         except IntegrityError:
             self.db.rollback()
-            flash("Error al guardar la calificación", "danger")
             raise
 
     def get_average_rating(self, dataset_id: int) -> float:
