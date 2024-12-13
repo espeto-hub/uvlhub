@@ -180,7 +180,7 @@ class AppriseExtension:
                                                   )
                 case t if 'choice:' in t:
                     example = example.replace(f'{{{token}}}', self.faker.random_element(details['values']))
-        return example
+        return example if self.is_url_valid(example, service_name)[0] else None
 
     def html_guide(self, service_name):
         service = self.get_service_schema(service_name)
