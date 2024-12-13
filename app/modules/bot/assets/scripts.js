@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     serviceSelect.addEventListener('change', function () {
         const serviceName = serviceSelect.value;
         if (serviceName !== 'Select one...') {
-            const encodedServiceName = encodeURIComponent(serviceName);
+            const encodedServiceName = encodeURIComponent(serviceName.replace(/\//g, '|'));
             fetch(`/bots/guide/${encodedServiceName}`)
                 .then(response => response.text())
                 .then(data => {
