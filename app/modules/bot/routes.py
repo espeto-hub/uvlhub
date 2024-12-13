@@ -100,8 +100,14 @@ def edit_bot(bot_id):
 def delete_bot(bot_id):
     service = BotService()
     bot = service.get_or_404(bot_id)
-    if not bot:
-        return redirect(url_for('bot.list_bots'))
+
+    auth_service = AuthenticationService()
+    profile = auth_service.get_authenticated_user_profile()
+    if not profile:
+        return redirect(url_for("public.index"))
+
+    if bot.user_id != profile.user_id:
+        abort(403)
 
     service.delete(bot)
     return redirect(url_for('bot.list_bots'))
