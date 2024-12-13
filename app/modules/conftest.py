@@ -1,15 +1,11 @@
-from unittest.mock import patch
-
 import pytest
 from faker import Faker
 
-from app import create_app, db, apprise
+from app import create_app, db
 from app.modules.auth.models import User
 from core.faker.faker import RegexProvider
 
 # Create a Faker instance
-FAKER_SEED = 42
-Faker.seed(FAKER_SEED)
 faker = Faker()
 faker.add_provider(RegexProvider)
 faker.status = 'test'
@@ -51,8 +47,7 @@ def test_client(test_app):
             for rule in test_app.url_map.iter_rules():
                 print(rule)
 
-            with patch.object(apprise, 'faker', faker):
-                yield testing_client
+            yield testing_client
 
             db.session.remove()
             db.drop_all()
