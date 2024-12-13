@@ -213,3 +213,11 @@ def test_clear_filters():
 
     finally:
         close_driver(driver)
+
+
+test_by_author()
+test_clear_filters()
+test_files_n()
+test_size()
+test_testbypublication()
+test_title()
