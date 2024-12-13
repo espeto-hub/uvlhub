@@ -137,7 +137,7 @@ class AppriseExtension:
     def generate_url_example(self, service_name):
         service = self.get_service_schema(service_name)
         if service is None:
-            return f'{service_name} is not a valid service'
+            return None
 
         service_details = service['details']
         example = self.faker.random_element(service_details['templates'])
