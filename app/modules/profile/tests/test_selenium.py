@@ -16,6 +16,7 @@ def test_checkdatasetuser():
         driver.find_element(By.LINK_TEXT, "Sample dataset 4").click()
         driver.find_element(By.LINK_TEXT, "Doe, Jane").click()
         driver.find_element(By.LINK_TEXT, "Sample dataset 2").click()
+        print("Test passed successfully")
     finally:
         close_driver(driver)
 
