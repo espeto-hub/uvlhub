@@ -121,7 +121,7 @@ def guide(service_name):
     if not profile:
         return redirect(url_for("public.index"))
 
-    service_name = unquote(service_name)
+    service_name = unquote(service_name).replace('|', '/')
     if service_name not in apprise.service_names:
         abort(404)
     return apprise.html_guide(service_name)
