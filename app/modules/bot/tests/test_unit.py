@@ -557,3 +557,45 @@ class TestBotEdit:
         assert response.status_code == 200
         assert b"Please test the bot first" in response.data
         assert db.session.query(Bot).get(bot.id).name != new_name
+
+
+@pytest.mark.parametrize("users", [2], indirect=True)
+@pytest.mark.parametrize("users_with_bots", [2], indirect=True)
+class TestBotDelete:
+    def test_delete_post_not_logged_in(self, test_client, users_with_bots):
+        response = test_client.post("/bots/delete/1")
+        assert response.status_code == 302
+        assert response.headers["Location"] == "/login?next=%2Fbots%2Fdelete%2F1"
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_delete_post_mine(self, logged_in_client, users_with_bots):
+        for bot in users_with_bots[0][3]:
+            response = logged_in_client.post(f"/bots/delete/{bot.id}")
+
+            assert response.status_code == 302
+            assert response.headers["Location"] == "/bots/list"
+
+        response = logged_in_client.get("/bots/list")
+        assert response.status_code == 200
+        assert b"You have no bots registered." in response.data
+        assert db.session.query(Bot).filter_by(user_id=users_with_bots[0][0].id).count() == 0
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_delete_post_others(self, logged_in_client, users_with_bots):
+        for user_with_bot in users_with_bots[1:]:
+            for bot in user_with_bot[3]:
+                response = logged_in_client.post(f"/bots/delete/{bot.id}")
+
+                assert response.status_code == 403
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_delete_post_empty(self, logged_in_client, users_with_bots):
+        response = logged_in_client.get("/bots/delete")
+
+        assert response.status_code == 404
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_delete_gpost_invalid(self, logged_in_client, users_with_bots):
+        response = logged_in_client.get("/bots/delete/" + fk.pystr(max_chars=5))
+
+        assert response.status_code == 404
