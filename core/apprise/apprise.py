@@ -89,7 +89,23 @@ class AppriseExtension:
                         case 'list:float':
                             continue
                         case 'list:string':
-                            continue
+                            # determine which delimiter is being used from the token_details['delim'] tuple
+                            # and split the value on that delimiter
+                            used_delim = None
+                            for delim in token_details['delim']:
+                                if delim in value:
+                                    used_delim = delim
+                                    break
+                            if used_delim is None:
+                                if token_details.get('regex') is not None and not re.match(token_details['regex'][0],
+                                                                                           value):
+                                    return None, f'Invalid list:string value for {token_details["name"]}, must match regular expression {token_details["regex"][0]}'
+                            else:
+                                values = value.split(used_delim)
+                                for v in values:
+                                    if token_details.get('regex') is not None and not re.match(
+                                            token_details['regex'][0], v):
+                                        return None, f'Invalid list:string value for {token_details["name"]}, must match regular expression {token_details["regex"][0]}'
                         case t if 'choice:' in t or 'bool' in t:
                             if value not in token_details['values']:
                                 return None, f'Invalid choice for {token_details["name"]}, must be one of: {", ".join(token_details["values"])}'
