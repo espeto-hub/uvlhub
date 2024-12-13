@@ -2,6 +2,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
+from app.modules.dataset.tests.test_selenium import wait_for_page_to_load
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import close_driver, initialize_driver
 
@@ -12,6 +13,7 @@ def test_by_author():
     try:
         host = get_host_for_selenium_testing()
         driver.get(f'{host}')
+        wait_for_page_to_load(driver)
         driver.set_window_size(1854, 1048)
         driver.find_element(By.CSS_SELECTOR, ".sidebar-item:nth-child(3) .align-middle:nth-child(2)").click()
         dropdown = driver.find_element(By.ID, "authors")
@@ -38,6 +40,7 @@ def test_testbypublication():
     try:
         host = get_host_for_selenium_testing()
         driver.get(f'{host}')
+        wait_for_page_to_load(driver)
         driver.set_window_size(1854, 1048)
         driver.find_element(By.CSS_SELECTOR, ".sidebar-item:nth-child(3) .align-middle:nth-child(2)").click()
         dropdown = driver.find_element(By.ID, "publication_type")
@@ -96,6 +99,7 @@ def test_files_n():
     try:
         host = get_host_for_selenium_testing()
         driver.get(f'{host}')
+        wait_for_page_to_load(driver)
         driver.set_window_size(1854, 1048)
         driver.find_element(By.CSS_SELECTOR, ".sidebar-item:nth-child(3) .align-middle:nth-child(2)").click()
         dropdown = driver.find_element(By.ID, "files")
@@ -143,6 +147,7 @@ def test_title():
     try:
         host = get_host_for_selenium_testing()
         driver.get(f'{host}')
+        wait_for_page_to_load(driver)
         driver.set_window_size(1854, 1048)
         driver.find_element(By.LINK_TEXT, "Explore").click()
         dropdown = driver.find_element(By.ID, "title")
@@ -168,6 +173,7 @@ def test_size():
     try:
         host = get_host_for_selenium_testing()
         driver.get(f'{host}')
+        wait_for_page_to_load(driver)
         driver.set_window_size(1854, 1048)
         driver.find_element(By.CSS_SELECTOR, ".sidebar-item:nth-child(3) .align-middle:nth-child(2)").click()
         dropdown = driver.find_element(By.ID, "size")
@@ -194,6 +200,7 @@ def test_clear_filters():
     try:
         host = get_host_for_selenium_testing()
         driver.get(f'{host}')
+        wait_for_page_to_load(driver)
         driver.set_window_size(1854, 1048)
         driver.find_element(By.LINK_TEXT, "Explore").click()
         dropdown = driver.find_element(By.ID, "authors")
