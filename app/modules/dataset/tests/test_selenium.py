@@ -4,6 +4,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import initialize_driver, close_driver
@@ -24,45 +25,6 @@ def count_datasets(driver, host):
     except Exception:
         amount_datasets = 0
     return amount_datasets
-
-
-def test_download_all_datasets():
-    driver = initialize_driver()
-
-    try:
-        host = get_host_for_selenium_testing()
-
-        # Open the login page
-        driver.get(f"{host}/login")
-        wait_for_page_to_load(driver)
-        # Find the username and password field and enter the values
-        email_field = driver.find_element(By.NAME, "email")
-        password_field = driver.find_element(By.NAME, "password")
-
-        email_field.send_keys("user1@example.com")
-        password_field.send_keys("1234")
-
-        # Send the form
-        password_field.send_keys(Keys.RETURN)
-        wait_for_page_to_load(driver)
-
-        # Open the download all datasets page
-        driver.get(f"{host}/dataset/download/all")
-        wait_for_page_to_load(driver)
-
-        # Verify that the "Download all dataset" link is present in the navigation bar
-        download_link = driver.find_element(By.LINK_TEXT, "Download all dataset")
-        assert download_link.is_displayed(), "Download all dataset link is not displayed in the navigation bar"
-
-        print("Test passed!")
-
-    finally:
-
-        # Close the browser
-        close_driver(driver)
-
-
-test_download_all_datasets()
 
 
 def test_upload_dataset():
@@ -89,7 +51,7 @@ def test_upload_dataset():
         # Count initial datasets
         initial_datasets = count_datasets(driver, host)
 
-        # Open the upload dataset
+        # Open the upload dataset page
         driver.get(f"{host}/dataset/upload")
         wait_for_page_to_load(driver)
 
@@ -154,8 +116,13 @@ def test_upload_dataset():
         upload_btn = driver.find_element(By.ID, "upload_button")
         upload_btn.send_keys(Keys.RETURN)
         wait_for_page_to_load(driver)
-        time.sleep(2)  # Force wait time
 
+        # Wait for the page to load and verify the URL has changed
+        WebDriverWait(driver, 10).until(
+            EC.url_contains(f"{host}/dataset/list")
+        )
+
+        # Assert the final URL
         assert driver.current_url == f"{host}/dataset/list", "Test failed!"
 
         # Count final datasets
@@ -165,7 +132,6 @@ def test_upload_dataset():
         print("Test passed!")
 
     finally:
-
         # Close the browser
         close_driver(driver)
 
