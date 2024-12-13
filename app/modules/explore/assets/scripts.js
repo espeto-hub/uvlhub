@@ -74,18 +74,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
         const filesMap = {
             "any": true,
-            "1file": filesCount == 1,
-            "2files": filesCount == 2,
-            "3files": filesCount == 3,
-            "4files": filesCount == 4,
-            "5files": filesCount == 5,
-            "6files": filesCount == 6,
-            "7files": filesCount == 7,
-            "8files": filesCount == 8,
-            "9files": filesCount == 9,
+            "1file": filesCount === 1,
+            "2files": filesCount === 2,
+            "3files": filesCount === 3,
+            "4files": filesCount === 4,
+            "5files": filesCount === 5,
+            "6files": filesCount === 6,
+            "7files": filesCount === 7,
+            "8files": filesCount === 8,
+            "9files": filesCount === 9,
             "moreThan10files": filesCount > 10,
         };
-        
+        // List of allowed values for `files`
+        const allowedFilesValues = Object.keys(filesMap);
+
+        // Ensure the `files` value is one of the allowed keys
+        if (!allowedFilesValues.includes(files)) {
+            console.warn(`Invalid files value: ${files}. Defaulting to "any"`);
+            files = "any"; // Use default value if not valid
+        }
         // If `files` value exists in `filesMap`, use it, otherwise return true by default
         return filesMap[files] ?? true;
     }
@@ -100,6 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
             between4KBand5KB: totalSize >= 4096 && totalSize < 5120,
             moreThan5KB: totalSize > 5120,
         };
+        // Validate that `size` is one of the expected keys
+        if (size in sizeMap) {
+            return sizeMap[size];
+        } else {
+            console.warn(`Invalid size value: ${size}. Returning default value.`);
+            return true;  // or return false or another default based on your logic
+        }
         return sizeMap[size] ?? true;
     }
     
