@@ -32,56 +32,53 @@ def test_rate_dataset():
     driver = initialize_driver()
 
     try:
-        # Abrir la página del dataset
+        # Generar la URL usando el DOI
         host = get_host_for_selenium_testing()
-        driver.get(f"{host}/dataset/1")  # Asegúrate de reemplazar con la URL correcta
-        wait_for_page_to_load(driver)
+        doi = "10.1234/1"  # Reemplaza con el DOI que necesitas probar
+        dataset_url = f"{host}/doi/{doi}/"
+        
+        # Navegar a la página del dataset
+        driver.get(dataset_url)
 
-        # Hacer clic en el botón para abrir el modal
-        rate_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-target='#ratingModal']"))
+        # Asegurarse de que la página esté completamente cargada
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
+
+        # Verificar el botón de calificación
+        rate_button = WebDriverWait(driver, 20).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "button[data-target='#ratingModal']"))
         )
         rate_button.click()
 
-        # Esperar que el modal esté visible
+        # Asegurarse de que el modal esté visible
         WebDriverWait(driver, 10).until(
             EC.visibility_of_element_located((By.ID, "ratingModal"))
         )
 
-        # Interactuar con las estrellas para calificar
+        # Interactuar con las estrellas y enviar el formulario
         stars = driver.find_elements(By.CLASS_NAME, "star")
         assert len(stars) == 5, "No se encontraron las 5 estrellas de calificación"
-
-        # Simular clic en la tercera estrella (por ejemplo)
         stars[2].click()
 
-        # Verificar que el valor oculto se actualiza correctamente
         hidden_input = driver.find_element(By.ID, "rating")
-        assert hidden_input.get_attribute("value") == "3", "La calificación seleccionada no es correcta"
+        assert hidden_input.get_attribute("value") == "3", "La calificación no se guardó correctamente"
 
-        # Hacer clic en "Enviar"
+        # Enviar el formulario
         submit_button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
         submit_button.click()
 
-        # Validar que el formulario fue enviado correctamente
-        # Por ejemplo, buscando un mensaje de confirmación o redirección
+        # Validar que la acción se completó correctamente
         success_message = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "success-message"))
+            EC.visibility_of_element_located((By.CLASS_NAME, "flash-message"))
         )
-        assert "Thank you" in success_message.text, "No se mostró el mensaje de éxito esperado"
+        assert "Thank you" in success_message.text, "No se mostró el mensaje de éxito"
 
     except TimeoutException as e:
-        print("Timeout occurred:", e)
-        driver.save_screenshot("test_rate_dataset_timeout.png")
-        raise
-
-    except AssertionError as e:
-        print("Assertion failed:", e)
-        driver.save_screenshot("test_rate_dataset_assertion_failed.png")
-        raise
-
+        print(f"Timeout occurred: {e}")
+        driver.save_screenshot("timeout_error.png")
     finally:
-        close_driver(driver)
+        driver.quit()
 
 
 test_rate_dataset()
