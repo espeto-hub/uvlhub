@@ -40,6 +40,9 @@ def create_bot():
                 form.test.errors.append(message)
             return render_template('bot/create_edit.html', form=form)
         elif form.submit.data:
+            if form.is_tested.data == 'false':
+                form.test.errors.append('Please test the bot first')
+                return render_template('bot/create_edit.html', form=form)
             result = service.create_bot(form)
             return service.handle_service_response(
                 result, None, 'bot.list_bots', 'Bot created successfully', 'bot/create_edit.html', form
