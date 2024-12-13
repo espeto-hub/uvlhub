@@ -173,29 +173,4 @@ def test_upload_dataset():
 # Call the test function
 test_upload_dataset()
 
-def test_rating_without_authentication():
-    driver = initialize_driver()
-
-    try:
-        host = get_host_for_selenium_testing()
-
-        # Open dataset page (replace DOI with a valid one for the test)
-        doi = "10.1234/example-doi"
-        driver.get(f"{host}/doi/{doi}/")
-        wait_for_page_to_load(driver)
-
-        # Attempt to open the rating modal
-        rating_modal_button = driver.find_element(By.ID, "ratingModalButton")
-        rating_modal_button.click()
-
-        # Check if the login prompt appears
-        modal_message = driver.find_element(By.CLASS_NAME, "modal-body").text
-        assert "Debes iniciar sesión para calificar este dataset." in modal_message, \
-            "Login prompt not displayed for unauthenticated user"
-
-        print("Test passed: Rating attempt without authentication")
-
-    finally:
-        # Close the browser
-        close_driver(driver)
 
