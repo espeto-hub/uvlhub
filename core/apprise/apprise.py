@@ -135,52 +135,59 @@ class AppriseExtension:
         return result
 
     def generate_url_example(self, service_name):
-        service = self.get_service_schema(service_name)
-        if service is None:
-            return None
+        try:
+            service = self.get_service_schema(service_name)
+            if service is None:
+                return None
 
-        service_details = service['details']
-        example = self.faker.random_element(service_details['templates'])
-        for token, details in service_details['tokens'].items():
-            match details["type"]:
-                case 'int':
-                    example = example.replace(f'{{{token}}}', str(self.faker.random_int(min=details.get('min', 0),
-                                                                                        max=details.get('max', 100))))
-                case 'float':
-                    example = example.replace(f'{{{token}}}', str(self.faker.pyfloat(min_value=details.get('min', 0.0),
-                                                                                     max_value=details.get('max',
-                                                                                                           100.0))))
-                case 'string':
-                    if details.get('regex') is not None:
-                        example = example.replace(f'{{{token}}}', self.faker.regex(details['regex'][0]))
-                    else:
-                        example = example.replace(f'{{{token}}}', self.faker.pystr(min_chars=5, max_chars=20))
-                case 'bool':
-                    example = example.replace(f'{{{token}}}', self.faker.random_element(['true', 'false']))
-                case 'list:int':
-                    delimiter = self.faker.random_element(details.get('delim', [',']))
-                    example = example.replace(f'{{{token}}}', delimiter.join(
-                        str(self.faker.random_int(min=details.get('min', 0), max=details.get('max', 100))) for _ in
-                        range(self.faker.random_int(min=1, max=3))))
-                case 'list:float':
-                    delimiter = self.faker.random_element(details.get('delim', [',']))
-                    example = example.replace(f'{{{token}}}', delimiter.join(
-                        str(self.faker.pyfloat(min_value=details.get('min', 0.0), max_value=details.get('max', 100.0)))
-                        for
-                        _ in range(self.faker.random_int(min=1, max=3))))
-                case 'list:string':
-                    delimiter = self.faker.random_element(details.get('delim', [',']))
-                    if details.get('regex') is not None:
+            service_details = service['details']
+            example = self.faker.random_element(service_details['templates'])
+            for token, details in service_details['tokens'].items():
+                match details["type"]:
+                    case 'int':
+                        example = example.replace(f'{{{token}}}', str(self.faker.random_int(min=details.get('min', 0),
+                                                                                            max=details.get('max',
+                                                                                                            100))))
+                    case 'float':
+                        example = example.replace(f'{{{token}}}',
+                                                  str(self.faker.pyfloat(min_value=details.get('min', 0.0),
+                                                                         max_value=details.get('max',
+                                                                                               100.0))))
+                    case 'string':
+                        if details.get('regex') is not None:
+                            example = example.replace(f'{{{token}}}', self.faker.regex(details['regex'][0]))
+                        else:
+                            example = example.replace(f'{{{token}}}', self.faker.pystr(min_chars=5, max_chars=20))
+                    case 'bool':
+                        example = example.replace(f'{{{token}}}', self.faker.random_element(['true', 'false']))
+                    case 'list:int':
+                        delimiter = self.faker.random_element(details.get('delim', [',']))
                         example = example.replace(f'{{{token}}}', delimiter.join(
-                            self.faker.regex(details['regex'][0]) for _ in range(self.faker.random_int(min=1, max=3))))
-                    else:
+                            str(self.faker.random_int(min=details.get('min', 0), max=details.get('max', 100))) for _ in
+                            range(self.faker.random_int(min=1, max=3))))
+                    case 'list:float':
+                        delimiter = self.faker.random_element(details.get('delim', [',']))
                         example = example.replace(f'{{{token}}}', delimiter.join(
-                            self.faker.pystr(min_chars=5, max_chars=20) for _ in
-                            range(self.faker.random_int(min=1, max=3)))
-                                                  )
-                case t if 'choice:' in t:
-                    example = example.replace(f'{{{token}}}', self.faker.random_element(details['values']))
-        return example if self.is_url_valid(example, service_name)[0] else None
+                            str(self.faker.pyfloat(min_value=details.get('min', 0.0),
+                                                   max_value=details.get('max', 100.0)))
+                            for
+                            _ in range(self.faker.random_int(min=1, max=3))))
+                    case 'list:string':
+                        delimiter = self.faker.random_element(details.get('delim', [',']))
+                        if details.get('regex') is not None:
+                            example = example.replace(f'{{{token}}}', delimiter.join(
+                                self.faker.regex(details['regex'][0]) for _ in
+                                range(self.faker.random_int(min=1, max=3))))
+                        else:
+                            example = example.replace(f'{{{token}}}', delimiter.join(
+                                self.faker.pystr(min_chars=5, max_chars=20) for _ in
+                                range(self.faker.random_int(min=1, max=3)))
+                                                      )
+                    case t if 'choice:' in t:
+                        example = example.replace(f'{{{token}}}', self.faker.random_element(details['values']))
+            return example if self.is_url_valid(example, service_name)[0] else None
+        except:
+            return None
 
     def html_guide(self, service_name):
         service = self.get_service_schema(service_name)
