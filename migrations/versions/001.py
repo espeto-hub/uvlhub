@@ -1,8 +1,9 @@
-"""Fakenodo migration
+"""first migration
 
 Revision ID: 001
-Revises:
+Revises: 
 Create Date: 2024-09-08 16:50:20.326640
+
 """
 from alembic import op
 import sqlalchemy as sa
@@ -47,17 +48,10 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    
-    # FAKENODO
-    op.create_table('deposition',
+    op.create_table('zenodo',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('dep_metadata', sa.JSON(), nullable=False),
-    sa.Column('status', sa.String(length=50), nullable=False),
-    sa.Column('doi', sa.String(length=250), nullable=True),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('doi')
+    sa.PrimaryKeyConstraint('id')
     )
-
     op.create_table('ds_meta_data',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('deposition_id', sa.Integer(), nullable=True),
@@ -135,6 +129,43 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('feature_model',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('data_set_id', sa.Integer(), nullable=False),
+    sa.Column('fm_meta_data_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['data_set_id'], ['data_set.id'], ),
+    sa.ForeignKeyConstraint(['fm_meta_data_id'], ['fm_meta_data.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('file',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=120), nullable=False),
+    sa.Column('checksum', sa.String(length=120), nullable=False),
+    sa.Column('size', sa.Integer(), nullable=False),
+    sa.Column('feature_model_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['feature_model_id'], ['feature_model.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('file_download_record',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('file_id', sa.Integer(), nullable=True),
+    sa.Column('download_date', sa.DateTime(), nullable=False),
+    sa.Column('download_cookie', sa.String(length=36), nullable=False),
+    sa.ForeignKeyConstraint(['file_id'], ['file.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('file_view_record',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('file_id', sa.Integer(), nullable=False),
+    sa.Column('view_date', sa.DateTime(), nullable=True),
+    sa.Column('view_cookie', sa.String(length=36), nullable=True),
+    sa.ForeignKeyConstraint(['file_id'], ['file.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     # ### end Alembic commands ###
 
 
@@ -151,7 +182,7 @@ def downgrade():
     op.drop_table('user_profile')
     op.drop_table('fm_meta_data')
     op.drop_table('ds_meta_data')
-    op.drop_table('deposition')  # fakenodo
+    op.drop_table('zenodo')
     op.drop_table('webhook')
     op.drop_table('user')
     op.drop_table('fm_metrics')
