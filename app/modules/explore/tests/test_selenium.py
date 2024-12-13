@@ -132,7 +132,7 @@ def test_clear_filters():
 
         clear_filters_button = driver.find_element(By.ID, "clear-filters")
         driver.execute_script("arguments[0].click();", clear_filters_button)
-
+        time.sleep(4)
         sample_dataset_link = driver.find_element(By.LINK_TEXT, "Sample dataset 1")
         driver.execute_script("arguments[0].click();", sample_dataset_link)
 
