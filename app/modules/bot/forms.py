@@ -1,6 +1,6 @@
 import wtforms
 from flask_wtf import FlaskForm
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, NoneOf
 
 from app import apprise
 from app.modules.bot.services import BotService
@@ -8,10 +8,11 @@ from app.modules.bot.services import BotService
 
 class BotForm(FlaskForm):
     id = wtforms.HiddenField()
-    name = wtforms.StringField('Name', validators=[DataRequired(), Length(min=3, max=50)])
+    name = wtforms.StringField('Name', validators=[DataRequired('Please input a name.'), Length(min=3, max=50)])
     service_name = wtforms.SelectField('Service', choices=['Select one...'] + apprise.service_names,
-                                       validators=[DataRequired()])
-    service_url = wtforms.URLField('URL', validators=[DataRequired()])
+                                       validators=[DataRequired('Please select a service'),
+                                                   NoneOf(['Select one...'], 'Please select a service')])
+    service_url = wtforms.URLField('URL', validators=[DataRequired('Please input an URL.')])
     enabled = wtforms.BooleanField('Enabled', default=True)
     on_download_dataset = wtforms.BooleanField('When someone downloads one of my datasets', default=False)
     on_download_file = wtforms.BooleanField('When someone downloads one of my files', default=False)
@@ -26,8 +27,7 @@ class BotForm(FlaskForm):
             raise wtforms.ValidationError(str(error))
 
     def validate_name(self, field):
-        if not self.id:
-            service = BotService()
-            bot = service.get_by_user_and_name(user_id=self.user_id.data, name=field.data)
-            if bot:
-                raise wtforms.ValidationError('Bot with this name already exists')
+        service = BotService()
+        bot = service.get_by_user_and_name(user_id=self.user_id.data, name=field.data)
+        if bot:
+            raise wtforms.ValidationError('Bot with this name already exists')
