@@ -232,8 +232,12 @@ class AppriseExtension:
         html += '</table>'
         html += '<h2>Examples</h2>'
         html += '<ul>'
-        for _ in range(3):
-            html += f'<li>{self.generate_url_example(service_name)}</li>'
+        i = 0
+        while i < 3:
+            exurl = self.generate_url_example(service_name)
+            if exurl:
+                html += f'<li>{exurl}</li>'
+                i += 1
         html += '</ul>'
         html += '<h2>Information</h2>'
         html += f"<p>For obtaining the required tokens, visit the <a href='{service["service_url"]}' target='_blank'>service's page</a>.<br>For more parameters and examples, visit the <a href='{service["setup_url"]}' target='_blank'>documentation</a>.</p>"
