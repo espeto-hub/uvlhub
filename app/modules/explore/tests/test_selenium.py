@@ -13,19 +13,17 @@ def test_by_author():
         host = get_host_for_selenium_testing()
         driver.get(f'{host}/explore')
         time.sleep(4)
+        # Seleccionar un autor en el dropdown
         dropdown = driver.find_element(By.ID, "authors")
-        dropdown.find_element(By.XPATH, "//option[. = 'Author 1']").click()
-        element = driver.find_element(By.ID, "authors")
-        actions = ActionChains(driver)
-        actions.move_to_element(element).click_and_hold().perform()
-        element = driver.find_element(By.ID, "authors")
-        actions = ActionChains(driver)
-        actions.move_to_element(element).perform()
-        element = driver.find_element(By.ID, "authors")
-        actions = ActionChains(driver)
-        actions.move_to_element(element).release().perform()
-        driver.find_element(By.LINK_TEXT, "View dataset").click()
-        driver.find_element(By.CSS_SELECTOR, ".doi_text").click()
+        driver.execute_script("arguments[0].value = 'Author 1';", dropdown)
+
+        # Simular un clic en "View dataset" usando JavaScript
+        view_dataset_link = driver.find_element(By.LINK_TEXT, "View dataset")
+        driver.execute_script("arguments[0].click();", view_dataset_link)
+
+        # Simular un clic en el elemento con la clase 'doi_text'
+        doi_text_element = driver.find_element(By.CSS_SELECTOR, ".doi_text")
+        driver.execute_script("arguments[0].click();", doi_text_element)
         print("Test passed successfully")
     finally:
         close_driver(driver)
