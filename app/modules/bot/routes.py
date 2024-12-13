@@ -61,8 +61,10 @@ def edit_bot(bot_id):
 
     service = BotService()
     bot = service.get_or_404(bot_id)
+
     if bot.user_id != profile.user_id:
         abort(403)
+
     form = BotForm(obj=bot)
     if request.method == 'POST' and form.validate_on_submit():
         if form.test.data:
@@ -78,6 +80,9 @@ def edit_bot(bot_id):
         elif form.submit.data:
             if form.is_tested.data == 'false':
                 form.test.errors.append('Please test the bot first')
+                return render_template('bot/create_edit.html', form=form, title='Edit bot')
+            if not service.is_bot_name_unique(form.name.data, bot_id):
+                form.name.errors.append('This name is already in use')
                 return render_template('bot/create_edit.html', form=form, title='Edit bot')
             result = service.update_bot(bot, form)
             return service.handle_service_response(
