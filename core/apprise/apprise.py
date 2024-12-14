@@ -61,6 +61,12 @@ class AppriseExtension:
                     return schema[0]
         return None
 
+    def get_service_templates(self, service_name):
+        service = self.get_service_schema(service_name)
+        if service is None:
+            return []
+        return service['details']['templates']
+
     def is_url_valid(self, url, service_name):
         service_details = self.get_service_schema(service_name)
         if service_details is None:
@@ -200,7 +206,7 @@ class AppriseExtension:
         self.clear()
         return result
 
-    def generate_url_example(self, service_name):
+    def generate_url_example(self, service_name, template=None):
         example = 'aaa://bbb/ccc'
         service = self.get_service_schema(service_name)
         if service is None:
@@ -208,7 +214,10 @@ class AppriseExtension:
 
         while not self.is_url_valid(example, service_name)[0]:
             service_details = service['details']
-            example = self.faker.random_element(service_details['templates'])
+            if template and template in service_details['templates']:
+                example = template
+            else:
+                example = self.faker.random_element(service_details['templates'])
             for token, details in service_details['tokens'].items():
                 match details["type"]:
                     case 'int':
