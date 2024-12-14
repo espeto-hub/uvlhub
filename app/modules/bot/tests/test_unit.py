@@ -413,27 +413,16 @@ class TestBotEdit:
             assert b"Please select a service" in response.data
             assert b"Please input an URL" in response.data
 
-    valid_bots = [
-        pytest.param(
-            {"name": fk.pystr(min_chars=3, max_chars=50)},
-            id="edit_name",
-        ),
-        pytest.param(
-            {
-                "service_name": "Discord",
-                "service_url": "discord://1234567890/abcdef",
-            },
-            id="edit_service_name_and_url",
-        ),
-    ]
-
     @pytest.mark.parametrize("logged_in_client", [1], indirect=True)
-    @pytest.mark.parametrize("bot_kwargs", valid_bots)
-    def test_edit_post_valid(self, logged_in_client, users_with_bots, bot_kwargs):
+    def test_edit_post_valid_name(self, logged_in_client, users_with_bots):
         bot = fk.random_element(users_with_bots[1][3])
+        new_name = bot.name
+        while new_name == bot.name:
+            new_name = fk.pystr(min_chars=3, max_chars=50)
         response = logged_in_client.post(
             f"/bots/edit/{bot.id}",
-            data=bot_kwargs | {
+            data={
+                'name': new_name,
                 'is_tested': 'true',
                 'test': 'false',
                 'submit': 'true',
@@ -442,8 +431,34 @@ class TestBotEdit:
         )
         assert response.status_code == 200
         assert b"Bot edited successfully" in response.data
-        for key, value in bot_kwargs.items():
-            assert str(getattr(db.session.query(Bot).get(bot.id), key)) == value
+        assert db.session.query(Bot).get(bot.id).name == new_name
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    @pytest.mark.parametrize("service_name,url_template",
+                             [(s, t) for s in apprise.service_names for t in apprise.get_service_templates(s)])
+    def test_edit_post_valid_service_and_url(self, logged_in_client, users_with_bots, service_name, url_template):
+        bot = fk.random_element(users_with_bots[0][3])
+        new_service_name = service_name
+        new_service_url = apprise.generate_url_example(service_name, url_template)
+        response = logged_in_client.post(
+            f"/bots/edit/{bot.id}",
+            data={
+                'name': bot.name,
+                'service_name': new_service_name,
+                'service_url': new_service_url,
+                'enabled': str(bot.enabled).lower(),
+                'on_download_dataset': str(bot.on_download_dataset).lower(),
+                'on_download_file': str(bot.on_download_file).lower(),
+                'is_tested': 'true',
+                'test': 'false',
+                'submit': 'true',
+            },
+            follow_redirects=True
+        )
+        assert response.status_code == 200
+        assert b"Bot edited successfully" in response.data
+        assert db.session.query(Bot).get(bot.id).service_name == new_service_name
+        assert db.session.query(Bot).get(bot.id).service_url == new_service_url
 
     invalid_bots = [
         pytest.param(
