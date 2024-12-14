@@ -15,17 +15,10 @@ def bot_generator(faker):
     def random_valid_bot(user, name=None, service_name=None, service_url=None, enabled=None, on_download_dataset=None,
                          on_download_file=None):
 
-        while True:
-            sn = service_name
-            su = service_url
-            if sn is None:
-                sn = faker.random_element(apprise.service_names)
-            if su is None:
-                su = apprise.generate_url_example(sn)
-            if su is not None:
-                service_name = sn
-                service_url = su
-                break
+        if service_name is None:
+            service_name = faker.random_element(apprise.service_names)
+        if service_url is None:
+            service_url = apprise.generate_url_example(service_name)
 
         bot = Bot(
             name=faker.pystr(min_chars=3, max_chars=50) if name is None else name,
