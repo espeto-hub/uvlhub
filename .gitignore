@@ -27,3 +27,6 @@ app/modules/fakenodo/tests/locustfile.py.py
 app/modules/fakenodo/tests/test_unit.py
 app/modules/zenodo/forms.py
 migrations/versions/001.py
+app/modules/fakenodo/templates/index.html
+app/modules/fakenodo/tests/locustfile.py.py
+app/modules/zenodo/forms.py
