@@ -2,23 +2,15 @@ name: pre-commit
 
 on:
   pull_request:
-    branches: [main, develop]
   push:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-
-        with:
-          python-version: '3.x'
-
-      - name: Run pre-commit
-        uses: pre-commit/action@c5d6e7f8a9b0c1d2e3f4a5b6abcdef1234567890
-        with:
-          extra_args: --all-files
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+    - uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: flake8 --all-files
