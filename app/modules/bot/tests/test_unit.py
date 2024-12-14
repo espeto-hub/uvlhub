@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 import pytest
 
 from app import apprise, db
@@ -597,5 +599,41 @@ class TestBotDelete:
     @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
     def test_delete_gpost_invalid(self, logged_in_client, users_with_bots):
         response = logged_in_client.get("/bots/delete/" + fk.pystr(max_chars=5))
+
+        assert response.status_code == 404
+
+
+@pytest.mark.parametrize("users", [1], indirect=True)
+class TestBotGuide:
+    @pytest.mark.parametrize("service_name", apprise.service_names)
+    def test_guide_not_logged_in(self, test_client, users, service_name):
+        service_name_quoted = quote(service_name.replace('/', '|'))
+        response = test_client.get(f"/bots/guide/{service_name_quoted}")
+        assert response.status_code == 302
+        assert "/login?next=%2Fbots%2Fguide%2F" in response.headers["Location"]
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    @pytest.mark.parametrize("service_name", apprise.service_names)
+    def test_guide_get(self, logged_in_client, users, service_name):
+        service_name_quoted = quote(service_name.replace('/', '|'))
+        response = logged_in_client.get(f"/bots/guide/{service_name_quoted}")
+
+        assert response.status_code == 200
+        if not b"has no documentation available" in response.data:
+            assert service_name.encode() in response.data
+            assert b'<h2>Templates</h2>' in response.data
+            assert b'<h2>Tokens</h2>' in response.data
+            assert b'<h2>Examples</h2>' in response.data
+            assert b'<h2>Information</h2>' in response.data
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_guide_get_empty(self, logged_in_client, users):
+        response = logged_in_client.get("/bots/guide")
+
+        assert response.status_code == 404
+
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_guide_get_invalid(self, logged_in_client, users):
+        response = logged_in_client.get("/bots/guide/" + quote(fk.pystr(max_chars=5), safe=''))
 
         assert response.status_code == 404
