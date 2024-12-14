@@ -28,9 +28,6 @@ class BotService(BaseService):
         )
         return created_instance
 
-    def get_by_user_and_name(self, user_id, name):
-        return self.repository.get_by_user_and_name(user_id, name)
-
     def update_bot(self, bot, form):
         return self.repository.update(
             bot.id,
