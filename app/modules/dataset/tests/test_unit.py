@@ -4,8 +4,7 @@ from flask import Flask
 from datetime import datetime
 from app.modules.dataset.routes import dataset_bp
 from app.modules.dataset.services import RatingService
-from app.modules.dataset.models import Rating, DataSet
-from sqlalchemy.exc import IntegrityError
+from app.modules.dataset.models import Rating
 
 
 # --- Tests existentes para descarga de datasets ---
