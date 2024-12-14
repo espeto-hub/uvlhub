@@ -1,32 +1,28 @@
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
 import time
 
 from core.environment.host import get_host_for_selenium_testing
 from core.selenium.common import initialize_driver, close_driver
 
 
-def test_featuremodel_index():
+def test_fakenodo_connection():
     driver = initialize_driver()
 
     try:
         host = get_host_for_selenium_testing()
 
-        # Open the index page
-        driver.get(f'{host}/featuremodel')
+        driver.get(f'{host}/fakenodo/api')
 
-        # Wait a little while to make sure the page has loaded completely
-        time.sleep(4)
+        time.sleep(3)
 
         try:
-            pass
+            body_text = driver.find_element(By.TAG_NAME, "body").text
+
+            assert "You have successfully connected to Fakenodo" in body_text
 
         except NoSuchElementException:
-            raise AssertionError('Test failed!')
+            raise AssertionError("El cuerpo de la página no contiene el mensaje esperado.")
 
     finally:
-        # Close the browser
         close_driver(driver)
-
-
-# Call the test function
-test_featuremodel_index()

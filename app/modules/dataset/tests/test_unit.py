@@ -38,11 +38,7 @@ def test_download_all_dataset(mock_send_file, mock_zip_all_datasets, client):
     # Verificar que send_file fue llamado con los argumentos correctos
     current_date = datetime.now().strftime("%Y_%m_%d")
     zip_filename = f"uvlhub_bulk_{current_date}.zip"
-    mock_send_file.assert_called_once_with(
-        '/path/to/all_datasets.zip',
-        as_attachment=True,
-        download_name=zip_filename
-    )
+    mock_send_file.assert_called_once_with('/path/to/all_datasets.zip', as_attachment=True, download_name=zip_filename)
 
 
 # --- Nuevos tests para el servicio de Rating ---

@@ -15,18 +15,22 @@ class Hubfile(db.Model):
 
     def get_formatted_size(self):
         from app.modules.dataset.services import SizeService
+
         return SizeService().get_human_readable_size(self.size)
 
     def get_owner_user(self) -> User:
         from app.modules.hubfile.services import HubfileService
+
         return HubfileService().get_owner_user_by_hubfile(self)
 
     def get_dataset(self) -> DataSet:
         from app.modules.hubfile.services import HubfileService
+
         return HubfileService().get_dataset_by_hubfile(self)
 
     def get_path(self) -> DataSet:
         from app.modules.hubfile.services import HubfileService
+
         return HubfileService().get_path_by_hubfile(self)
 
     def to_dict(self):

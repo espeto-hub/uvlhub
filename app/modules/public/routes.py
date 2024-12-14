@@ -35,5 +35,5 @@ def index():
         total_dataset_downloads=total_dataset_downloads,
         total_feature_model_downloads=total_feature_model_downloads,
         total_dataset_views=total_dataset_views,
-        total_feature_model_views=total_feature_model_views
+        total_feature_model_views=total_feature_model_views,
     )

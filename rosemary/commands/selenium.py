@@ -19,8 +19,7 @@ def selenium(module):
             selenium_test_path = os.path.join(module_path, 'tests', 'test_selenium.py')
             if not os.path.exists(selenium_test_path):
                 raise click.UsageError(
-                    f"Selenium test for module '{module}' does not exist at path "
-                    f"'{selenium_test_path}'."
+                    f"Selenium test for module '{module}' does not exist at path " f"'{selenium_test_path}'."
                 )
 
     def run_selenium_tests_in_local(module):
@@ -46,23 +45,25 @@ def selenium(module):
         validate_module(module)
 
     if working_dir == '/app/':
-
-        click.echo(click.style(
-            "Currently it is not possible to run this "
-            "command from a Docker environment, do you want to implement it yourself? ^^",
-            fg='red'
-        ))
+        click.echo(
+            click.style(
+                "Currently it is not possible to run this "
+                "command from a Docker environment, do you want to implement it yourself? ^^",
+                fg='red',
+            )
+        )
 
     elif working_dir == '':
         run_selenium_tests_in_local(module)
 
     elif working_dir == '/vagrant/':
-
-        click.echo(click.style(
-            "Currently it is not possible to run this "
-            "command from a Vagrant environment, do you want to implement it yourself? ^^",
-            fg='red'
-        ))
+        click.echo(
+            click.style(
+                "Currently it is not possible to run this "
+                "command from a Vagrant environment, do you want to implement it yourself? ^^",
+                fg='red',
+            )
+        )
 
     else:
         click.echo(click.style(f"Unrecognized WORKING_DIR: {working_dir}", fg='red'))

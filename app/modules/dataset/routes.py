@@ -23,9 +23,7 @@ from flask_login import login_required, current_user
 
 from app import db
 from app.modules.dataset.forms import DataSetForm
-from app.modules.dataset.models import (
-    DSDownloadRecord
-)
+from app.modules.dataset.models import DSDownloadRecord
 from app.modules.dataset import dataset_bp
 from app.modules.dataset.forms import RatingForm
 from app.modules.dataset.models import DataSet
@@ -36,7 +34,10 @@ from app.modules.dataset.services import (
     DSViewRecordService,
     DataSetService,
     DOIMappingService,
+
     RatingService,
+
+
 )
 from app.modules.fakenodo.services import FakenodoService
 
@@ -56,6 +57,9 @@ ds_view_record_service = DSViewRecordService()
 def create_dataset():
     form = DataSetForm()
     if request.method == "POST":
+
+        dataset = None
+
 
         if not form.validate_on_submit():
             return jsonify({"message": form.errors}), 400
@@ -145,9 +149,7 @@ def upload():
         # Generate unique filename (by recursion)
         base_name, extension = os.path.splitext(file.filename)
         i = 1
-        while os.path.exists(
-            os.path.join(temp_folder, f"{base_name} ({i}){extension}")
-        ):
+        while os.path.exists(os.path.join(temp_folder, f"{base_name} ({i}){extension}")):
             i += 1
         new_filename = f"{base_name} ({i}){extension}"
         file_path = os.path.join(temp_folder, new_filename)
@@ -207,7 +209,11 @@ def download_dataset(dataset_id):
     # Lógica para manejar las cookies y registros de descarga
     user_cookie = request.cookies.get("download_cookie")
     if not user_cookie:
+
         user_cookie = str(uuid.uuid4())
+
+        user_cookie = str(uuid.uuid4())  # Generate a new unique identifier if it does not exist
+
         resp = make_response(
             send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip")
         )
@@ -220,7 +226,7 @@ def download_dataset(dataset_id):
     existing_record = DSDownloadRecord.query.filter_by(
         user_id=current_user.id if current_user.is_authenticated else None,
         dataset_id=dataset_id,
-        download_cookie=user_cookie
+        download_cookie=user_cookie,
     ).first()
 
     if not existing_record:
@@ -248,7 +254,6 @@ def download_all_dataset():
 
 @dataset_bp.route("/doi/<path:doi>/", methods=["GET"])
 def subdomain_index(doi):
-
     form = RatingForm()
     # Check if the DOI is an old DOI
     new_doi = doi_mapping_service.get_new_doi(doi)
@@ -276,7 +281,6 @@ def subdomain_index(doi):
 @dataset_bp.route("/dataset/unsynchronized/<int:dataset_id>/", methods=["GET"])
 @login_required
 def get_unsynchronized_dataset(dataset_id):
-
     # Get dataset
     dataset = dataset_service.get_unsynchronized_dataset(current_user.id, dataset_id)
 
