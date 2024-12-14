@@ -170,6 +170,3 @@ test_rate_without_login()
 
 
 
-# Call the test function
-test_upload_dataset()
-
