@@ -13,12 +13,12 @@ from app.modules.profile.models import UserProfile
 @pytest.fixture(scope="module")
 def bot_generator(faker):
     def random_valid_bot(user, name=None, service_name=None, service_url=None, enabled=None, on_download_dataset=None,
-                         on_download_file=None):
+                         on_download_file=None, url_template=None):
 
         if service_name is None:
             service_name = faker.random_element(apprise.service_names)
         if service_url is None:
-            service_url = apprise.generate_url_example(service_name)
+            service_url = apprise.generate_url_example(service_name, url_template)
 
         bot = Bot(
             name=faker.pystr(min_chars=3, max_chars=50) if name is None else name,
@@ -206,9 +206,10 @@ class TestBotCreate:
         assert b"Please input an URL" in response.data
 
     @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
-    @pytest.mark.parametrize("service_name", apprise.service_names)
-    def test_create_post_valid(self, logged_in_client, users, bot_generator, service_name):
-        bot = bot_generator(users[0][0], service_name)
+    @pytest.mark.parametrize("service_name,url_template",
+                             [(s, t) for s in apprise.service_names for t in apprise.get_service_templates(s)])
+    def test_create_post_valid(self, logged_in_client, users, bot_generator, service_name, url_template):
+        bot = bot_generator(users[0][0], service_name=service_name, url_template=url_template)
         response = logged_in_client.post(
             "/bots/create",
             data={
