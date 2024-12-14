@@ -46,16 +46,25 @@ class AppriseExtension:
 
     @property
     def service_names(self):
-        return sorted(
-            [str(s['service_name']) for s in self.details()['schemas'] if self.get_service_schema(s['service_name'])])
+        service_names = []
+        for schema in self.details()['schemas']:
+            if schema.get('service_name') and schema.get('details'):
+                if schema['details'].get('templates') and schema['details'].get('tokens'):
+                    service_names.append(str(schema['service_name']))
+        return sorted(service_names)
 
     def get_service_schema(self, service_name):
-        return next((s for s in self.details()['schemas'] if s['service_name'] == service_name), None)
+        for name in self.service_names:
+            if name == service_name:
+                schema = [schema for schema in self.details()['schemas'] if str(schema['service_name']) == service_name]
+                if schema:
+                    return schema[0]
+        return None
 
     def is_url_valid(self, url, service_name):
         service_details = self.get_service_schema(service_name)
         if service_details is None:
-            return None, f'{service_name} is not a valid service'
+            return True, None
         else:
             service_details = service_details['details']
 
@@ -143,7 +152,7 @@ class AppriseExtension:
     def generate_url_example(self, service_name):
         service = self.get_service_schema(service_name)
         if service is None:
-            return None
+            return 'aaa://bbb/ccc'
 
         service_details = service['details']
         example = self.faker.random_element(service_details['templates'])
