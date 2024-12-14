@@ -30,8 +30,8 @@ def test_create_deposition_files(client):
     assert response.status_code == 201
     assert response.json == {
         "status": "success",
-        "message": "You have successfuly uploaded deposition files in Fakenodo."
-        }
+        "message": "You have successfuly uploaded deposition files in Fakenodo.",
+    }
 
 
 def test_delete_deposition(client):
