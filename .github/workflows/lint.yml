@@ -27,3 +27,7 @@ jobs:
     - name: Lint with flake8
       run: |
         flake8 app
+
+    - name: Check Code Format with Black
+      run: |
+        black --check app
