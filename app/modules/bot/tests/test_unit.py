@@ -607,7 +607,7 @@ class TestBotDelete:
         assert response.status_code == 404
 
     @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
-    def test_delete_gpost_invalid(self, logged_in_client, users_with_bots):
+    def test_delete_post_invalid(self, logged_in_client, users_with_bots):
         response = logged_in_client.get("/bots/delete/" + fk.pystr(max_chars=5))
 
         assert response.status_code == 404
