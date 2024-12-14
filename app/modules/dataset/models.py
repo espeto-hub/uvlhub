@@ -53,9 +53,7 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     dataset = db.relationship('DataSet', back_populates='ratings')
     user = db.relationship('User', back_populates='ratings')
-    __table_args__ = (
-        UniqueConstraint('dataset_id', 'user_id', name='uix_dataset_user'),
-    )
+    __table_args__ = (UniqueConstraint('dataset_id', 'user_id', name='uix_dataset_user'),)
 
     def __repr__(self):
         return f'<Rating dataset_id={self.dataset_id}, user_id={self.user_id}, score={self.score}>'
@@ -74,6 +72,7 @@ class DataSet(db.Model):
 
     def get_uvlhub_doi(self):
         from app.modules.dataset.services import DataSetService
+
         return DataSetService().get_uvlhub_doi(self)
 
     def get_files_count(self):
@@ -81,6 +80,7 @@ class DataSet(db.Model):
 
     def get_file_total_size_for_human(self):
         from app.modules.dataset.services import SizeService
+
         return SizeService().get_human_readable_size(self.get_file_total_size())
 
     def get_file_total_size(self):
@@ -175,7 +175,7 @@ class DSMetaData(db.Model):
             'files_count': self.get_files_count(),
             'total_size_in_bytes': self.get_file_total_size(),
             'total_size_in_human_format': self.get_file_total_size_for_human(),
-            'average_rating': self.get_average_rating()  # Promedio de calificación
+            'average_rating': self.get_average_rating(),  # Promedio de calificación
         }
 
     def __repr__(self):

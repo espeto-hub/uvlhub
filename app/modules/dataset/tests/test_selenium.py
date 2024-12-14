@@ -1,4 +1,3 @@
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -77,9 +76,7 @@ def test_rate_dataset():
         driver.get(dataset_url)
 
         # Asegurarse de que la página esté completamente cargada
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.TAG_NAME, "body"))
-        )
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
         # Verificar el botón de calificación
         rate_button = WebDriverWait(driver, 20).until(
@@ -88,9 +85,7 @@ def test_rate_dataset():
         rate_button.click()
 
         # Asegurarse de que el modal esté visible
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.ID, "ratingModal"))
-        )
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "ratingModal")))
 
         # Interactuar con las estrellas y enviar el formulario
         stars = driver.find_elements(By.CLASS_NAME, "star")
@@ -134,9 +129,7 @@ def test_rate_without_login():
         driver.get(dataset_url)
 
         # Asegurarse de que la página esté completamente cargada
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.TAG_NAME, "body"))
-        )
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
         # Hacer clic en el botón de enviar calificación
         send_button = WebDriverWait(driver, 10).until(
@@ -145,9 +138,7 @@ def test_rate_without_login():
         send_button.click()
 
         # Esperar a que ocurra la redirección
-        WebDriverWait(driver, 10).until(
-            EC.url_contains("/login")
-        )
+        WebDriverWait(driver, 10).until(EC.url_contains("/login"))
 
         # Verificar que se redirigió a la página de inicio de sesión
         assert "login" in driver.current_url, "No se redirigió a la página de inicio de sesión"

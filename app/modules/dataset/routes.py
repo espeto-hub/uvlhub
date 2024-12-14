@@ -17,7 +17,7 @@ from flask import (
     make_response,
     abort,
     url_for,
-    flash
+    flash,
 )
 from flask_login import login_required, current_user
 
@@ -34,10 +34,7 @@ from app.modules.dataset.services import (
     DSViewRecordService,
     DataSetService,
     DOIMappingService,
-
     RatingService,
-
-
 )
 from app.modules.fakenodo.services import FakenodoService
 
@@ -218,8 +215,9 @@ def download_dataset(dataset_id):
         )
         resp.set_cookie("download_cookie", user_cookie)
     else:
-        resp = send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True,
-                                   mimetype="application/zip")
+        resp = send_from_directory(
+            temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip"
+        )
 
     # Comprobar si ya existe un registro de descarga para este usuario y dataset
     existing_record = DSDownloadRecord.query.filter_by(
