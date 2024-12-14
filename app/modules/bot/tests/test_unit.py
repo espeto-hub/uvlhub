@@ -1,12 +1,21 @@
+import os
+import shutil
+from datetime import datetime, timezone
+from unittest.mock import patch
 from urllib.parse import quote
 
 import pytest
+from dotenv import load_dotenv
+from sqlalchemy.exc import IntegrityError
 
 from app import apprise, db
 from app.modules.auth.models import User
 from app.modules.bot.models import Bot
 from app.modules.conftest import faker as fk
 from app.modules.conftest import login, logout
+from app.modules.dataset.models import DSMetrics, DSMetaData, PublicationType, Author, DataSet, DSDownloadRecord
+from app.modules.featuremodel.models import FMMetaData, FeatureModel
+from app.modules.hubfile.models import Hubfile, HubfileDownloadRecord
 from app.modules.profile.models import UserProfile
 
 
@@ -647,3 +656,220 @@ class TestBotGuide:
         response = logged_in_client.get("/bots/guide/" + quote(fk.pystr(max_chars=5), safe=''))
 
         assert response.status_code == 404
+
+
+@pytest.mark.parametrize("users", [2], indirect=True)
+@pytest.mark.parametrize("users_with_bots", [2], indirect=True)
+class TestBotMessaging:
+    def seed(self, db, data):
+        if not data:
+            return []
+
+        model = type(data[0])
+        if not all(isinstance(obj, model) for obj in data):
+            raise ValueError("All objects must be of the same model.")
+
+        try:
+            db.session.add_all(data)
+            db.session.commit()
+        except IntegrityError as e:
+            db.session.rollback()
+            raise Exception(f"Failed to insert data into `{model.__tablename__}` table. Error: {e}")
+
+        # After committing, the `data` objects should have their IDs assigned.
+        return data
+
+    @pytest.fixture(scope="class")
+    def test_client(self, test_client, users_with_bots):
+        user1 = users_with_bots[0][0]
+        user2 = users_with_bots[1][0]
+
+        ds_metrics = DSMetrics(number_of_models='5', number_of_features='50')
+        seeded_ds_metrics = self.seed(db, [ds_metrics])[0]
+
+        ds_meta_data_list = [
+            DSMetaData(
+                deposition_id=1 + i,
+                title=f'Sample dataset {i + 1}',
+                description=f'Description for dataset {i + 1}',
+                publication_type=PublicationType.DATA_MANAGEMENT_PLAN,
+                publication_doi=f'10.1234/dataset{i + 1}',
+                dataset_doi=f'10.1234/dataset{i + 1}',
+                tags='tag1, tag2',
+                ds_metrics_id=seeded_ds_metrics.id
+            ) for i in range(4)
+        ]
+        seeded_ds_meta_data = self.seed(db, ds_meta_data_list)
+
+        authors = [
+            Author(
+                name=f'Author {i + 1}',
+                affiliation=f'Affiliation {i + 1}',
+                orcid=f'0000-0000-0000-000{i}',
+                ds_meta_data_id=seeded_ds_meta_data[i % 4].id
+            ) for i in range(4)
+        ]
+        seeded_authors = self.seed(db, authors)
+
+        datasets = [
+            DataSet(
+                user_id=user1.id if i % 2 == 0 else user2.id,
+                ds_meta_data_id=seeded_ds_meta_data[i].id,
+                created_at=datetime.now(timezone.utc)
+            ) for i in range(4)
+        ]
+        seeded_datasets = self.seed(db, datasets)
+
+        fm_meta_data_list = [
+            FMMetaData(
+                uvl_filename=f'file{i + 1}.uvl',
+                title=f'Feature Model {i + 1}',
+                description=f'Description for feature model {i + 1}',
+                publication_type=PublicationType.SOFTWARE_DOCUMENTATION,
+                publication_doi=f'10.1234/fm{i + 1}',
+                tags='tag1, tag2',
+                uvl_version='1.0'
+            ) for i in range(12)
+        ]
+        seeded_fm_meta_data = self.seed(db, fm_meta_data_list)
+
+        fm_authors = [
+            Author(
+                name=f'Author {i + 5}',
+                affiliation=f'Affiliation {i + 5}',
+                orcid=f'0000-0000-0000-000{i + 5}',
+                fm_meta_data_id=seeded_fm_meta_data[i].id
+            ) for i in range(12)
+        ]
+        seeded_fm_authors = self.seed(db, fm_authors)
+
+        feature_models = [
+            FeatureModel(
+                data_set_id=seeded_datasets[i // 3].id,
+                fm_meta_data_id=seeded_fm_meta_data[i].id
+            ) for i in range(12)
+        ]
+        seeded_feature_models = self.seed(db, feature_models)
+
+        load_dotenv()
+        working_dir = os.getenv('WORKING_DIR', '')
+        src_folder = os.path.join(working_dir, 'app', 'modules', 'dataset', 'uvl_examples')
+        seeded_files = []
+        for i in range(12):
+            file_name = f'file{i + 1}.uvl'
+            feature_model = seeded_feature_models[i]
+            dataset = next(ds for ds in seeded_datasets if ds.id == feature_model.data_set_id)
+            user_id = dataset.user_id
+
+            dest_folder = os.path.join(working_dir, 'uploads', f'user_{user_id}', f'dataset_{dataset.id}')
+            os.makedirs(dest_folder, exist_ok=True)
+            shutil.copy(os.path.join(src_folder, file_name), dest_folder)
+
+            file_path = os.path.join(dest_folder, file_name)
+
+            uvl_file = Hubfile(
+                name=file_name,
+                checksum=f'checksum{i + 1}',
+                size=os.path.getsize(file_path),
+                feature_model_id=feature_model.id
+            )
+            seeded_files.append(self.seed(db, [uvl_file]))
+
+        yield test_client
+
+        # Delete all objects in DSDownloadRecord
+        db.session.query(DSDownloadRecord).delete()
+        db.session.query(HubfileDownloadRecord).delete()
+
+    @patch("app.apprise.send_test_message")
+    @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
+    def test_messaging_test_message(self, mock_send_test_message, logged_in_client, users_with_bots):
+        mock_send_test_message.return_value = True, ""
+
+        bot = users_with_bots[0][3][0]
+        new_service_name = fk.random_element(apprise.service_names)
+        new_service_url = apprise.generate_url_example(new_service_name)
+
+        response = logged_in_client.post(f"/bots/edit/{bot.id}", data={
+            'service_name': new_service_name,
+            'service_url': new_service_url,
+            'test': 'true',
+            'submit': 'false',
+        })
+
+        assert response.status_code == 200
+        assert '✔'.encode() in response.data
+
+        mock_send_test_message.assert_called_once()
+        assert mock_send_test_message.call_args[0][0] == new_service_url
+        assert db.session.query(Bot).get(bot.id).service_name == bot.service_name
+        assert db.session.query(Bot).get(bot.id).service_url == bot.service_url
+
+    @patch("app.apprise.send_message")
+    @pytest.mark.parametrize("logged_in_client", [1], indirect=True)
+    @pytest.mark.parametrize("enabled", [True, False], ids=["enabled", "disabled"])
+    @pytest.mark.parametrize("on_download_dataset", [True, False],
+                             ids=["on_download_dataset", "not_on_download_dataset"])
+    def test_messaging_on_download_dataset(self, mock_send_message, logged_in_client, users_with_bots, enabled,
+                                           on_download_dataset):
+        uploader = users_with_bots[0][0]
+        bot = users_with_bots[0][3][0]
+        dataset = fk.random_element([ds for ds in DataSet.query.filter_by(user_id=uploader.id).all()])
+
+        mock_send_message.return_value = True
+
+        bot.enabled = enabled
+        bot.on_download_dataset = on_download_dataset
+        db.session.commit()
+
+        assert db.session.query(Bot).get(bot.id).enabled == enabled
+        assert db.session.query(Bot).get(bot.id).on_download_dataset == on_download_dataset
+
+        response = logged_in_client.get(f"/dataset/download/{dataset.id}")
+
+        assert response.status_code == 200
+        if enabled and on_download_dataset:
+            mock_send_message.assert_called_once()
+            assert bot.service_url in mock_send_message.call_args[0][0]
+        else:
+            mock_send_message.assert_called_once()
+            assert mock_send_message.call_args[0][0] == []
+
+    @patch("app.apprise.send_message")
+    @pytest.mark.parametrize("logged_in_client", [1], indirect=True)
+    @pytest.mark.parametrize("enabled", [True, False], ids=["enabled", "disabled"])
+    @pytest.mark.parametrize("on_download_file", [True, False], ids=["on_download_file", "not_on_download_file"])
+    @pytest.mark.parametrize("route,content_type,extension",
+                             [("/file/download", "application/octet-stream", '.uvl'),
+                              ("/flamapy/to_glencoe", "text/plain; charset=utf-8", ".uvl_glencoe.txt"),
+                              ("/flamapy/to_splot", "text/plain; charset=utf-8", '.uvl_splot.txt'),
+                              ("/flamapy/to_cnf", "text/plain; charset=utf-8", '.uvl_cnf.txt')],
+                             ids=["uvl", "glencoe", "splot", "cnf"])
+    def test_messaging_on_download_file(self, mock_send_message, logged_in_client, users_with_bots, enabled,
+                                        on_download_file, route, content_type, extension):
+        uploader = users_with_bots[0][0]
+        bot = users_with_bots[0][3][0]
+        dataset = fk.random_element([ds for ds in DataSet.query.filter_by(user_id=uploader.id).all()])
+        feature_model = fk.random_element([fm for fm in FeatureModel.query.filter_by(data_set_id=dataset.id).all()])
+        file = fk.random_element([f for f in Hubfile.query.filter_by(feature_model_id=feature_model.id).all()])
+
+        mock_send_message.return_value = True
+
+        bot.enabled = enabled
+        bot.on_download_file = on_download_file
+        db.session.commit()
+
+        assert db.session.query(Bot).get(bot.id).enabled == enabled
+        assert db.session.query(Bot).get(bot.id).on_download_file == on_download_file
+
+        response = logged_in_client.get(f"{route}/{file.id}", follow_redirects=True)
+
+        assert response.status_code == 200
+        assert response.content_type == content_type
+        assert response.headers['Content-Disposition'].endswith(extension)
+        if enabled and on_download_file:
+            mock_send_message.assert_called_once()
+            assert bot.service_url in mock_send_message.call_args[0][0]
+        else:
+            mock_send_message.assert_called_once()
+            assert mock_send_message.call_args[0][0] == []
