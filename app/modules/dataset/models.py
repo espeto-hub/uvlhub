@@ -48,7 +48,7 @@ class Author(db.Model):
 class Rating(db.Model):
     __tablename__ = 'dataset_ratings'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    score = db.Column(db.Integer, nullable=False) 
+    score = db.Column(db.Integer, nullable=False)
     dataset_id = db.Column(db.Integer, db.ForeignKey('data_set.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     dataset = db.relationship('DataSet', back_populates='ratings')
@@ -56,7 +56,7 @@ class Rating(db.Model):
     __table_args__ = (
         UniqueConstraint('dataset_id', 'user_id', name='uix_dataset_user'),
     )
-    
+
     def __repr__(self):
         return f'<Rating dataset_id={self.dataset_id}, user_id={self.user_id}, score={self.score}>'
 

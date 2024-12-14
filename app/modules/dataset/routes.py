@@ -60,7 +60,6 @@ def create_dataset():
 
         dataset = None
 
-
         if not form.validate_on_submit():
             return jsonify({"message": form.errors}), 400
 
@@ -219,7 +218,7 @@ def download_dataset(dataset_id):
         )
         resp.set_cookie("download_cookie", user_cookie)
     else:
-        resp = send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, 
+        resp = send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True,
                                    mimetype="application/zip")
 
     # Comprobar si ya existe un registro de descarga para este usuario y dataset

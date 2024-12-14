@@ -48,15 +48,17 @@ def mock_db_session():
     """Fixture para proporcionar una sesión de base de datos simulada."""
     return MagicMock()
 
+
 @pytest.fixture
 def rating_service(mock_db_session):
     """Fixture para inicializar el servicio de rating."""
     return RatingService(db_session=mock_db_session)
 
+
 @patch('flask.flash')  # Mock para flash
 def test_save_rating_creates_new(mock_flash, rating_service, mock_db_session):
     """Probar que se crea una nueva calificación si no existe."""
-    
+
     no_rating = MagicMock(spec=Rating, score=None)
     mock_db_session.query().filter_by().first.return_value = no_rating
 
@@ -66,9 +68,6 @@ def test_save_rating_creates_new(mock_flash, rating_service, mock_db_session):
     # Verificar que la calificación fue actualizada
     assert no_rating.score == 5
     mock_db_session.commit.assert_called_once()
-
-
-
 
 
 def test_save_rating_updates_existing(client, rating_service, mock_db_session):

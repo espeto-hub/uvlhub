@@ -58,4 +58,3 @@ def test_get_deposition(client):
         "doi": "10.1234/fakenodo.123456",
 
     }
-

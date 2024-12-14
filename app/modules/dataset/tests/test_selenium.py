@@ -26,6 +26,8 @@ def count_datasets(driver, host):
     except Exception:
         amount_datasets = 0
     return amount_datasets
+
+
 def test_download_all_datasets():
     driver = initialize_driver()
 
@@ -64,7 +66,6 @@ def test_download_all_datasets():
 test_download_all_datasets()
 
 
-
 def test_rate_dataset():
     driver = initialize_driver()
 
@@ -73,7 +74,7 @@ def test_rate_dataset():
         host = get_host_for_selenium_testing()
         doi = "10.1234/1"  # Reemplaza con el DOI que necesitas probar
         dataset_url = f"{host}/doi/{doi}/"
-        
+
         # Navegar a la página del dataset
         driver.get(dataset_url)
 
@@ -119,9 +120,7 @@ def test_rate_dataset():
         driver.quit()
 
 
-
 test_rate_dataset()
-
 
 
 def test_rate_without_login():
@@ -165,8 +164,5 @@ def test_rate_without_login():
 
         driver.quit()
 
+
 test_rate_without_login()
-
-
-
-
