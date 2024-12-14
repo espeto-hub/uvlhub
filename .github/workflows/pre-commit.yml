@@ -10,11 +10,11 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@a3b1c29d4f3a5b6c7d8e9f0abcdef1234567890
+      - uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@b4c2d19e5f6a7b8c9d0e1f2abcdef1234567890
+        uses: actions/setup-python@v2
+
         with:
           python-version: '3.x'
 
