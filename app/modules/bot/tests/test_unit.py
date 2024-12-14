@@ -213,8 +213,9 @@ class TestBotCreate:
         assert b"Please input an URL" in response.data
 
     @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
-    def test_create_post_valid(self, logged_in_client, users, bot_generator):
-        bot = bot_generator(users[0][0])
+    @pytest.mark.parametrize("service_name", apprise.service_names)
+    def test_create_post_valid(self, logged_in_client, users, bot_generator, service_name):
+        bot = bot_generator(users[0][0], service_name)
         response = logged_in_client.post(
             "/bots/create",
             data={
