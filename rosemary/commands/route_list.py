@@ -21,8 +21,7 @@ def route_list(module_name, group):
         click.echo(f"Listing routes for the '{module_name}' module...")
         # Path filtering for a specific module
         filtered_rules = [
-            rule for rule in current_app.url_map.iter_rules()
-            if rule.endpoint.startswith(f"{module_name}.")
+            rule for rule in current_app.url_map.iter_rules() if rule.endpoint.startswith(f"{module_name}.")
         ]
         print_route_table(filtered_rules)
     else:

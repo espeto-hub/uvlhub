@@ -5,13 +5,12 @@ import subprocess
 
 @click.command('linter', help="Runs flake8 linter on the 'app' and 'rosemary' directories.")
 def linter():
-
     # Define the directories to be checked with flake8
     working_dir = os.getenv('WORKING_DIR', '')
     directories = [
         os.path.join(working_dir, 'app'),
         os.path.join(working_dir, 'rosemary'),
-        os.path.join(working_dir, 'core')
+        os.path.join(working_dir, 'core'),
     ]
 
     # Run flake8 in each directory

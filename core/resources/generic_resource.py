@@ -66,4 +66,5 @@ def create_resource(model, serialization_fields=None):
     class Resource(GenericResource):
         def __init__(self):
             super().__init__(model, serialization_fields)
+
     return Resource

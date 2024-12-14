@@ -1,12 +1,12 @@
 # ESPETO-HUB
 - **Nombre del Proyecto**: espeto-hub
 - **Fecha de Inicio**: 05/11/2024
-- **Curso escolar**: 2024/2025  
+- **Curso escolar**: 2024/2025
 - **Asignatura**:  Evolución y Gestión de la Configuración
 
 ---
 
-# Miembros: 
+# Miembros:
 | Miembro | Implicación |
 | :---- | :---- |
 | Castillejo Vela, Manuel | \[10\] |
@@ -32,8 +32,8 @@
 # ACTA FUNDACIONAL
 
 ## Índice
-1. [Información clave del equipo](#1-información-clave-del-equipo)  
-    - [Información de contacto](#Información-de-contacto) 
+1. [Información clave del equipo](#1-información-clave-del-equipo)
+    - [Información de contacto](#Información-de-contacto)
     - [_Work Items_ a desarrollar](#work-items-a-dsarrollar)
     - [Responsables de los _Work Items_](#responsables-de-los-work-items)
 2. [Gestión del equipo](#2-gestión-del-equipo)
@@ -76,7 +76,7 @@
 ### _Work Items_ a desarrollar
 
 **DIFICULTY** [ H=HARD, M=MEDIUM, L=LOW ]
-- **(H) Fakenodo:** representación simplificada de Zenodo. Este componente permitirá emular su funcionalidad sin necesidad de depender de un servicio externo real. 
+- **(H) Fakenodo:** representación simplificada de Zenodo. Este componente permitirá emular su funcionalidad sin necesidad de depender de un servicio externo real.
 
 - **(H) Advanced filtering:** Como usuario quiero filtrar por número de features, número de productos, etc.., para obtener conjuntos de datos según mis necesidades.
 
@@ -137,7 +137,7 @@ Para automatizar los flujos de trabajo, utilizamos la siguiente configuración d
 
 - **commits Syntax Checker:** asegura el uso de Conventional Commits. Esto mejora la claridad del historial de cambios y facilita la generación de changelogs.
 
-- **Create and publish a Docker image:** automatiza la creación y publicación de imágenes de Docker como parte del proceso de liberación del producto. 
+- **Create and publish a Docker image:** automatiza la creación y publicación de imágenes de Docker como parte del proceso de liberación del producto.
 
 - **Dependabot:** actualiza automáticamente las dependencias del proyecto y configura un flujo para probar y validar dichas actualizaciones antes de integrarlas en el código principal.
 
@@ -171,7 +171,7 @@ En cuanto a las tareas de documntación se harán directamente en 'main' para ev
 
 Optamos por el inglés como idioma oficial para redactar los mensajes.
 
-Patrón a seguir: 
+Patrón a seguir:
 
 ```
 < tag >: <descripción breve>
@@ -249,16 +249,16 @@ Los títulos de las **tareas** seguirán el patrón:
 ```
 - Add a description:
 ```
-**¿Está tu solicitud de función relacionada con un problema? Por favor describe.**  
+**¿Está tu solicitud de función relacionada con un problema? Por favor describe.**
 Una descripción clara y concisa de cuál es el problema. Ej. Siempre me frustra cuando [...]
 
-**Describe la solución que te gustaría**  
+**Describe la solución que te gustaría**
 Una descripción clara y concisa de lo que quieres que suceda.
 
-**Describe las alternativas que has considerado**  
+**Describe las alternativas que has considerado**
 Una descripción clara y concisa de cualquier solución o función alternativa que hayas considerado.
 
-**Contexto adicional**  
+**Contexto adicional**
 Agrega cualquier otro contexto o capturas de pantalla sobre la solicitud de función aquí.
 
 ```
@@ -290,9 +290,3 @@ Además, se comprometen a alcanzar los siguientes objetivos:
 | Gálvez López, Juan Pedro        |   firmado ✓    |
 | Pérez Lázaro, Francisco         |   firmado ✓    |
 | Rodriguez Millán, Maria C.      |   firmado ✓    |
-
-
-
-
-
-

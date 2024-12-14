@@ -20,9 +20,7 @@ load_dotenv()
 
 
 class ZenodoService(BaseService):
-
     def get_zenodo_url(self):
-
         ZENODO_API_URL = "http://localhost/fakenodo/api"
 
         return ZENODO_API_URL

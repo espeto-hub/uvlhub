@@ -57,7 +57,6 @@ def test_download_all_datasets():
         print("Test passed!")
 
     finally:
-
         # Close the browser
         close_driver(driver)
 
@@ -165,7 +164,6 @@ def test_upload_dataset():
         print("Test passed!")
 
     finally:
-
         # Close the browser
         close_driver(driver)
 
