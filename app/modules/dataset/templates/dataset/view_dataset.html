@@ -18,9 +18,101 @@
 
 {% block content %}
 
+
+<div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ratingModal">
+        Rate Dataset
+    </button>
+</div>
+
+<!-- Modal -->
+<!-- Modal para calificar el dataset -->
+<div class="modal fade" id="ratingModal" tabindex="-1" role="dialog" aria-labelledby="ratingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ratingModalLabel">Rate this dataset:</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <!-- Formulario con CSRF Token -->
+            <form method="POST" action="{{ url_for('dataset.rate_dataset', dataset_id=dataset.id) }}">
+                {{ form.hidden_tag() }} <!-- CSRF Token -->
+                <div class="modal-body">
+                    <!-- Formulario de calificación -->
+                    <div class="form-group">
+                        <div class="rating text-center">
+                            <!-- Estrellas para seleccionar la calificación -->
+                            <i class="fa fa-star fa-3x star" data-score="1"></i> <!-- Star 1 -->
+                            <i class="fa fa-star fa-3x star" data-score="2"></i> <!-- Star 2 -->
+                            <i class="fa fa-star fa-3x star" data-score="3"></i> <!-- Star 3 -->
+                            <i class="fa fa-star fa-3x star" data-score="4"></i> <!-- Star 4 -->
+                            <i class="fa fa-star fa-3x star" data-score="5"></i> <!-- Star 5 -->
+                        </div>
+                        <input type="hidden" id="rating" name="score" value="">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Asegúrate de que el DOM esté completamente cargado
+    document.addEventListener("DOMContentLoaded", function() {
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('rating');
+
+        // Función para actualizar las estrellas visualmente
+        function updateStars(selectedScore) {
+            stars.forEach(star => {
+                if (parseInt(star.getAttribute('data-score')) <= selectedScore) {
+                    star.classList.add('text-warning'); // Añadir color amarillo (estrellas activas)
+                } else {
+                    star.classList.remove('text-warning'); // Quitar color amarillo (estrellas inactivas)
+                }
+            });
+        }
+
+        // Inicializar estrellas con la calificación previa si existe
+        const initialRating = ratingInput.value ? parseInt(ratingInput.value) : 0;
+        if (initialRating) {
+            updateStars(initialRating);
+        }
+
+        // Función para manejar el clic en las estrellas
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const selectedScore = parseInt(star.getAttribute('data-score'));
+                ratingInput.value = selectedScore; // Guardar la calificación en el campo hidden
+                updateStars(selectedScore); // Actualizar las estrellas visualmente
+            });
+        });
+    });
+</script>
+
+
+
+<!-- CSS de Bootstrap -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- FontAwesome para los iconos de las estrellas -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+<!-- JS de Bootstrap y jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.5/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
 <div class="row mb-3">
 
-    <div class="col-6">
+    <div class="d-flex justify-content-start">
         <a href="/explore" class="btn btn-primary btn-sm" id="search" style="border-radius: 5px;">
             <i data-feather="search" class="center-button-icon"></i>
             Explore more datasets
@@ -140,19 +232,24 @@
                 </div>
                 {% endif %}
                 <div class="row mb-2">
-
                     <div class="col-md-4 col-12">
-                        <span class=" text-secondary">
-                            Tags
+                        <span class="text-secondary">
+                            Average Rating
                         </span>
                     </div>
                     <div class="col-md-8 col-12">
-                        {% for tag in dataset.ds_meta_data.tags.split(',') %}
-                        <span class="badge bg-secondary">{{ tag.strip() }}</span>
-                        {% endfor %}
+                        {% if dataset.get_average_rating() is not none %}
+                            <p class="p-0 m-0">
+                                {{ dataset.get_average_rating() | round(2) }} / 5
+                            </p>
+                        {% else %}
+                            <p class="p-0 m-0">
+                                There are no ratings yet
+                            </p>
+                        {% endif %}
                     </div>
-
                 </div>
+
 
 
 
@@ -324,6 +421,22 @@
             {% endfor %}
         </div>
 
+        {% if current_user.is_authenticated %}
+    {% set user_rating = dataset.ratings | selectattr('user_id', 'equalto', current_user.id) | first %}
+    <div class="my-3">
+        <strong>Tu calificación:</strong>
+        {% if user_rating %}
+            <div class="rating">
+                {% for i in range(5) %}
+                    <i class="fa fa-star fa-3x {% if i < user_rating.score %}text-warning{% else %}text-muted{% endif %}"></i>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No has calificado este dataset aún.</p>
+        {% endif %}
+    </div>
+{% endif %}
+
 
 
         <a href="/dataset/download/{{ dataset.id }}" class="btn btn-primary mt-3" style="border-radius: 5px;">
@@ -333,6 +446,7 @@
     </div>
 
 </div>
+
 
 <!-- Modal-->
 <div class="modal fade" id="fileViewerModal" tabindex="-1" aria-labelledby="fileViewerModalLabel" aria-hidden="true">
@@ -493,5 +607,7 @@
         });
     }
 </script>
+
+
 
 {% endblock %}

@@ -2,11 +2,13 @@ from datetime import datetime
 from enum import Enum
 
 from flask import request
+from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 from app import db
 
 
+# Modelo de publicación (sin cambios)
 class PublicationType(Enum):
     NONE = 'none'
     ANNOTATION_COLLECTION = 'annotationcollection'
@@ -29,6 +31,7 @@ class PublicationType(Enum):
     OTHER = 'other'
 
 
+# Modelo de autor (sin cambios)
 class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
@@ -39,6 +42,62 @@ class Author(db.Model):
 
     def to_dict(self):
         return {'name': self.name, 'affiliation': self.affiliation, 'orcid': self.orcid}
+
+
+# Modelo de calificación para datasets
+class Rating(db.Model):
+    __tablename__ = 'dataset_ratings'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    score = db.Column(db.Integer, nullable=False)
+    dataset_id = db.Column(db.Integer, db.ForeignKey('data_set.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    dataset = db.relationship('DataSet', back_populates='ratings')
+    user = db.relationship('User', back_populates='ratings')
+    __table_args__ = (UniqueConstraint('dataset_id', 'user_id', name='uix_dataset_user'),)
+
+    def __repr__(self):
+        return f'<Rating dataset_id={self.dataset_id}, user_id={self.user_id}, score={self.score}>'
+
+
+class DataSet(db.Model):
+    __tablename__ = 'data_set'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    ds_meta_data_id = db.Column(db.Integer, db.ForeignKey('ds_meta_data.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    ds_meta_data = db.relationship('DSMetaData', backref=db.backref('data_set', uselist=False))
+    feature_models = db.relationship('FeatureModel', backref='data_set', lazy=True, cascade="all, delete")
+    ratings = db.relationship('Rating', back_populates='dataset', cascade="all, delete-orphan")
+
+    def get_uvlhub_doi(self):
+        from app.modules.dataset.services import DataSetService
+
+        return DataSetService().get_uvlhub_doi(self)
+
+    def get_files_count(self):
+        return sum(len(fm.files) for fm in self.feature_models)
+
+    def get_file_total_size_for_human(self):
+        from app.modules.dataset.services import SizeService
+
+        return SizeService().get_human_readable_size(self.get_file_total_size())
+
+    def get_file_total_size(self):
+        """Calcula el tamaño total de todos los archivos asociados al dataset."""
+        return sum(file.size for fm in self.feature_models for file in fm.files)
+
+    def get_cleaned_publication_type(self):
+        return self.ds_meta_data.publication_type.name.replace('_', ' ').title()
+
+    def get_average_rating(self):
+        if not self.ratings:
+            return None
+        return sum(rating.score for rating in self.ratings) / len(self.ratings)
+
+    # Métodos adicionales
+    def name(self):
+        return self.ds_meta_data.title
 
 
 class DSMetrics(db.Model):
@@ -62,20 +121,6 @@ class DSMetaData(db.Model):
     ds_metrics_id = db.Column(db.Integer, db.ForeignKey('ds_metrics.id'))
     ds_metrics = db.relationship('DSMetrics', uselist=False, backref='ds_meta_data', cascade="all, delete")
     authors = db.relationship('Author', backref='ds_meta_data', lazy=True, cascade="all, delete")
-
-
-class DataSet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    ds_meta_data_id = db.Column(db.Integer, db.ForeignKey('ds_meta_data.id'), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    ds_meta_data = db.relationship('DSMetaData', backref=db.backref('data_set', uselist=False))
-    feature_models = db.relationship('FeatureModel', backref='data_set', lazy=True, cascade="all, delete")
-
-    def name(self):
-        return self.ds_meta_data.title
 
     def files(self):
         return [file for fm in self.feature_models for file in fm.files]
@@ -130,6 +175,7 @@ class DataSet(db.Model):
             'files_count': self.get_files_count(),
             'total_size_in_bytes': self.get_file_total_size(),
             'total_size_in_human_format': self.get_file_total_size_for_human(),
+            'average_rating': self.get_average_rating(),  # Promedio de calificación
         }
 
     def __repr__(self):

@@ -17,12 +17,16 @@ from flask import (
     make_response,
     abort,
     url_for,
+    flash,
 )
 from flask_login import login_required, current_user
 
+from app import db
 from app.modules.dataset.forms import DataSetForm
 from app.modules.dataset.models import DSDownloadRecord
 from app.modules.dataset import dataset_bp
+from app.modules.dataset.forms import RatingForm
+from app.modules.dataset.models import DataSet
 from app.modules.dataset.services import (
     AuthorService,
     DSDownloadRecordService,
@@ -30,8 +34,9 @@ from app.modules.dataset.services import (
     DSViewRecordService,
     DataSetService,
     DOIMappingService,
+    RatingService,
 )
-from app.modules.zenodo.services import ZenodoService
+from app.modules.fakenodo.services import FakenodoService
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +44,7 @@ logger = logging.getLogger(__name__)
 dataset_service = DataSetService()
 author_service = AuthorService()
 dsmetadata_service = DSMetaDataService()
-zenodo_service = ZenodoService()
+fakenodo_service = FakenodoService()
 doi_mapping_service = DOIMappingService()
 ds_view_record_service = DSViewRecordService()
 
@@ -49,6 +54,7 @@ ds_view_record_service = DSViewRecordService()
 def create_dataset():
     form = DataSetForm()
     if request.method == "POST":
+
         dataset = None
 
         if not form.validate_on_submit():
@@ -56,51 +62,55 @@ def create_dataset():
 
         try:
             logger.info("Creating dataset...")
+            # Crear el dataset
             dataset = dataset_service.create_from_form(form=form, current_user=current_user)
             logger.info(f"Created dataset: {dataset}")
-            dataset_service.move_feature_models(dataset)
-        except Exception as exc:
-            logger.exception(f"Exception while create dataset data in local {exc}")
-            return jsonify({"Exception while create dataset data in local: ": str(exc)}), 400
 
-        # send dataset as deposition to Zenodo
+            # Mover los feature models
+            dataset_service.move_feature_models(dataset)
+
+        except Exception as exc:
+            logger.exception(f"Exception while creating dataset data in local {exc}")
+            return jsonify({"Exception while creating dataset data in local: ": str(exc)}), 400
+
+        # Enviar el dataset a Fakenodo
         data = {}
         try:
-            zenodo_response_json = zenodo_service.create_new_deposition(dataset)
-            response_data = json.dumps(zenodo_response_json)
+            fakenodo_response_json = fakenodo_service.create_new_deposition(dataset)
+            response_data = json.dumps(fakenodo_response_json)
             data = json.loads(response_data)
         except Exception as exc:
             data = {}
-            zenodo_response_json = {}
-            logger.exception(f"Exception while create dataset data in Zenodo {exc}")
+            fakenodo_response_json = {}
+            logger.exception(f"Exception while creating dataset data in Fakenodo {exc}")
 
         if data.get("conceptrecid"):
             deposition_id = data.get("id")
 
-            # update dataset with deposition id in Zenodo
+            # Actualizar dataset con el deposition ID en Fakenodo
             dataset_service.update_dsmetadata(dataset.ds_meta_data_id, deposition_id=deposition_id)
 
             try:
-                # iterate for each feature model (one feature model = one request to Zenodo)
+                # Cargar cada modelo de características en Fakenodo
                 for feature_model in dataset.feature_models:
-                    zenodo_service.upload_file(dataset, deposition_id, feature_model)
+                    fakenodo_service.upload_file(dataset, deposition_id, feature_model)
 
-                # publish deposition
-                zenodo_service.publish_deposition(deposition_id)
+                # Publicar la entrada
+                fakenodo_service.publish_deposition(deposition_id)
 
-                # update DOI
-                deposition_doi = zenodo_service.get_doi(deposition_id)
+                # Actualizar el DOI
+                deposition_doi = fakenodo_service.get_doi(deposition_id)
                 dataset_service.update_dsmetadata(dataset.ds_meta_data_id, dataset_doi=deposition_doi)
             except Exception as e:
-                msg = f"it has not been possible upload feature models in Zenodo and update the DOI: {e}"
+                msg = f"Unable to upload feature models to Fakenodo and update DOI: {e}"
                 return jsonify({"message": msg}), 200
 
-        # Delete temp folder
+        # Borrar carpeta temporal
         file_path = current_user.temp_folder()
         if os.path.exists(file_path) and os.path.isdir(file_path):
             shutil.rmtree(file_path)
 
-        msg = "Everything works!"
+        msg = "Dataset created successfully!"
         return jsonify({"message": msg}), 200
 
     return render_template("dataset/upload_dataset.html", form=form)
@@ -174,47 +184,42 @@ def delete():
 
 @dataset_bp.route("/dataset/download/<int:dataset_id>", methods=["GET"])
 def download_dataset(dataset_id):
-    dataset = dataset_service.get_or_404(dataset_id)
+    dataset = dataset_service.get_or_404(dataset_id)  # Obtiene el dataset
+    form = RatingForm()  # Inicializa el formulario para la calificación
 
     file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/"
-
     temp_dir = tempfile.mkdtemp()
     zip_path = os.path.join(temp_dir, f"dataset_{dataset_id}.zip")
 
+    # Crear el archivo ZIP con los datos del dataset
     with ZipFile(zip_path, "w") as zipf:
         for subdir, dirs, files in os.walk(file_path):
             for file in files:
                 full_path = os.path.join(subdir, file)
-
                 relative_path = os.path.relpath(full_path, file_path)
-
                 zipf.write(
                     full_path,
                     arcname=os.path.join(os.path.basename(zip_path[:-4]), relative_path),
                 )
 
+    # Lógica para manejar las cookies y registros de descarga
     user_cookie = request.cookies.get("download_cookie")
     if not user_cookie:
+
+        user_cookie = str(uuid.uuid4())
+
         user_cookie = str(uuid.uuid4())  # Generate a new unique identifier if it does not exist
-        # Save the cookie to the user's browser
+
         resp = make_response(
-            send_from_directory(
-                temp_dir,
-                f"dataset_{dataset_id}.zip",
-                as_attachment=True,
-                mimetype="application/zip",
-            )
+            send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip")
         )
         resp.set_cookie("download_cookie", user_cookie)
     else:
         resp = send_from_directory(
-            temp_dir,
-            f"dataset_{dataset_id}.zip",
-            as_attachment=True,
-            mimetype="application/zip",
+            temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip"
         )
 
-    # Check if the download record already exists for this cookie
+    # Comprobar si ya existe un registro de descarga para este usuario y dataset
     existing_record = DSDownloadRecord.query.filter_by(
         user_id=current_user.id if current_user.is_authenticated else None,
         dataset_id=dataset_id,
@@ -222,7 +227,7 @@ def download_dataset(dataset_id):
     ).first()
 
     if not existing_record:
-        # Record the download in your database
+        # Si no existe, crear un nuevo registro de descarga
         DSDownloadRecordService().create(
             user_id=current_user.id if current_user.is_authenticated else None,
             dataset_id=dataset_id,
@@ -230,7 +235,8 @@ def download_dataset(dataset_id):
             download_cookie=user_cookie,
         )
 
-    return resp
+    # Redirigir a la vista del dataset con el formulario de calificación
+    return render_template("view_dataset.html", form=form, dataset=dataset)
 
 
 @dataset_bp.route("/dataset/download/all", methods=["GET"])
@@ -245,6 +251,7 @@ def download_all_dataset():
 
 @dataset_bp.route("/doi/<path:doi>/", methods=["GET"])
 def subdomain_index(doi):
+    form = RatingForm()
     # Check if the DOI is an old DOI
     new_doi = doi_mapping_service.get_new_doi(doi)
     if new_doi:
@@ -262,7 +269,7 @@ def subdomain_index(doi):
 
     # Save the cookie to the user's browser
     user_cookie = ds_view_record_service.create_cookie(dataset=dataset)
-    resp = make_response(render_template("dataset/view_dataset.html", dataset=dataset))
+    resp = make_response(render_template("dataset/view_dataset.html", form=form, dataset=dataset))
     resp.set_cookie("view_cookie", user_cookie)
 
     return resp
@@ -278,3 +285,30 @@ def get_unsynchronized_dataset(dataset_id):
         abort(404)
 
     return render_template("dataset/view_dataset.html", dataset=dataset)
+
+
+@dataset_bp.route("/dataset/<int:dataset_id>/rate", methods=["GET", "POST"])
+@login_required
+def rate_dataset(dataset_id):
+    form = RatingForm()  # Inicializamos el formulario de Rating
+    dataset = DataSet.query.get_or_404(dataset_id)  # Buscamos el dataset por ID
+
+    # Crear una instancia del servicio RatingService dentro de la función
+    rating_service = RatingService(db.session)
+
+    if form.validate_on_submit():
+        try:
+            # Usamos el servicio para guardar la calificación
+            rating_service.save_rating(dataset_id=dataset.id, user_id=current_user.id, score=form.score.data)
+
+            # Redirigir al detalle del dataset después de guardar la calificación
+            return redirect(url_for('dataset.view_dataset', dataset_id=dataset.id))  # Redirigir al detalle del dataset
+        except ValueError as e:
+            # Mostrar el error capturado por 'e'
+            flash(f"Error: {str(e)}", "danger")  # Ahora mostramos el mensaje de error con 'e'
+        except Exception as e:
+            # Mostrar el error genérico si ocurre otro tipo de excepción
+            flash(f"Hubo un problema al guardar la calificación: {str(e)}", "danger")
+
+    # Aquí renderizamos la plantilla, asegurándonos de pasar 'form' y 'dataset' a la plantilla
+    return render_template("dataset/view_dataset.html", form=form, dataset=dataset)
