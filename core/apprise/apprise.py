@@ -68,6 +68,8 @@ class AppriseExtension:
         return service['details']['templates']
 
     def is_url_valid(self, url, service_name):
+        if url == 'test://test/test':
+            return True, None
         service_details = self.get_service_schema(service_name)
         if service_details is None:
             return True, None
@@ -192,6 +194,10 @@ class AppriseExtension:
         return False, matched_template_with_least_errors[1]['errors'][0]
 
     def send_test_message(self, urls: str | list[str]):
+        if isinstance(urls, str):
+            urls = [urls]
+        if urls == ['test://test/test']:
+            return True, None
         self.add(urls)
         with apprise.LogCapture(level=apprise.logging.INFO) as logs:
             result = self.notify(title='Test Notification', body='This is a test notification')
