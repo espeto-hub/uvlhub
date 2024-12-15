@@ -82,11 +82,14 @@ class BotMessagingService(BaseService):
             return
 
         title = "Someone downloaded your file!"
-        body = f"Your file '{file.name}' from the dataset {file.feature_model.data_set.name()} has been downloaded in {format} format"
+        body = (
+            f"Your file '{file.name}' from the dataset {file.feature_model.data_set.name()} "
+            f"has been downloaded in {format} format"
+        )
         if profile:
             body += f" by {profile.name} {profile.surname}"
         else:
-            body = f" by an anonymous user"
+            body = " by an anonymous user"
         service = BotService()
         urls = service.get_on_download_file_bot_urls(uploader_id)
         apprise.send_message(urls, title=title, body=body)

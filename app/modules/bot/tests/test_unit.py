@@ -531,8 +531,7 @@ class TestBotEdit:
         bot = fk.random_element(users_with_bots[0][3])
         response = logged_in_client.post(
             f"/bots/edit/{bot.id}",
-            data=bot_kwargs
-                 | {
+            data=bot_kwargs | {
                 'is_tested': 'true',
                 'test': 'false',
                 'submit': 'true',
@@ -652,7 +651,7 @@ class TestBotGuide:
         response = logged_in_client.get(f"/bots/guide/{service_name_quoted}")
 
         assert response.status_code == 200
-        if not b"has no documentation available" in response.data:
+        if b"has no documentation available" not in response.data:
             assert service_name.encode() in response.data
             assert b'<h2>Templates</h2>' in response.data
             assert b'<h2>Tokens</h2>' in response.data
@@ -725,7 +724,7 @@ class TestBotMessaging:
             )
             for i in range(4)
         ]
-        seeded_authors = self.seed(db, authors)
+        self.seed(db, authors)
 
         datasets = [
             DataSet(
@@ -760,7 +759,7 @@ class TestBotMessaging:
             )
             for i in range(12)
         ]
-        seeded_fm_authors = self.seed(db, fm_authors)
+        self.seed(db, fm_authors)
 
         feature_models = [
             FeatureModel(data_set_id=seeded_datasets[i // 3].id, fm_meta_data_id=seeded_fm_meta_data[i].id)

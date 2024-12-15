@@ -171,6 +171,7 @@ class BotBehavior(TaskSet):
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
 
+
 class BotUser(HttpUser):
     tasks = [BotBehavior]
     min_wait = 5000
