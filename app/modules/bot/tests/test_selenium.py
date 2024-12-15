@@ -214,7 +214,6 @@ def test_bot_edit():
         close_driver(driver)
 
 
-
 # Call the test function
 test_bot_list()
 test_bot_create_and_delete()
