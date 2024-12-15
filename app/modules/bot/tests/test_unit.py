@@ -21,8 +21,16 @@ from app.modules.profile.models import UserProfile
 
 @pytest.fixture(scope="module")
 def bot_generator(faker):
-    def random_valid_bot(user, name=None, service_name=None, service_url=None, enabled=None, on_download_dataset=None,
-                         on_download_file=None, url_template=None):
+    def random_valid_bot(
+            user,
+            name=None,
+            service_name=None,
+            service_url=None,
+            enabled=None,
+            on_download_dataset=None,
+            on_download_file=None,
+            url_template=None,
+    ):
 
         if service_name is None:
             service_name = faker.random_element(apprise.service_names)
@@ -36,7 +44,7 @@ def bot_generator(faker):
             user=user,
             enabled=faker.boolean() if enabled is None else enabled,
             on_download_dataset=faker.boolean() if on_download_dataset is None else on_download_dataset,
-            on_download_file=faker.boolean() if on_download_file is None else on_download_file
+            on_download_file=faker.boolean() if on_download_file is None else on_download_file,
         )
         return bot
 
@@ -61,7 +69,7 @@ def profile_generator(faker):
         profile = UserProfile(
             name=faker.first_name() if name is None else name,
             surname=faker.last_name() if surname is None else surname,
-            user_id=user.id
+            user_id=user.id,
         )
         return profile
 
@@ -215,8 +223,9 @@ class TestBotCreate:
         assert b"Please input an URL" in response.data
 
     @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
-    @pytest.mark.parametrize("service_name,url_template",
-                             [(s, t) for s in apprise.service_names for t in apprise.get_service_templates(s)])
+    @pytest.mark.parametrize(
+        "service_name,url_template", [(s, t) for s in apprise.service_names for t in apprise.get_service_templates(s)]
+    )
     def test_create_post_valid(self, logged_in_client, users, bot_generator, service_name, url_template):
         bot = bot_generator(users[0][0], service_name=service_name, url_template=url_template)
         response = logged_in_client.post(
@@ -233,7 +242,7 @@ class TestBotCreate:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
@@ -304,7 +313,7 @@ class TestBotCreate:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
@@ -330,7 +339,7 @@ class TestBotCreate:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
@@ -356,7 +365,7 @@ class TestBotCreate:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
@@ -404,17 +413,20 @@ class TestBotEdit:
     @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
     def test_edit_post_empty(self, logged_in_client, users_with_bots):
         for bot in users_with_bots[0][3]:
-            response = logged_in_client.post(f"/bots/edit/{bot.id}", data={
-                'name': '',
-                'service_name': '',
-                'service_url': '',
-                'enabled': '',
-                'on_download_dataset': '',
-                'on_download_file': '',
-                'is_tested': 'true',
-                'test': 'false',
-                'submit': 'true',
-            })
+            response = logged_in_client.post(
+                f"/bots/edit/{bot.id}",
+                data={
+                    'name': '',
+                    'service_name': '',
+                    'service_url': '',
+                    'enabled': '',
+                    'on_download_dataset': '',
+                    'on_download_file': '',
+                    'is_tested': 'true',
+                    'test': 'false',
+                    'submit': 'true',
+                },
+            )
 
             assert response.status_code == 200
             assert b"Edit bot" in response.data
@@ -436,15 +448,16 @@ class TestBotEdit:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
         assert response.status_code == 200
         assert b"Bot edited successfully" in response.data
         assert db.session.query(Bot).get(bot.id).name == new_name
 
     @pytest.mark.parametrize("logged_in_client", [0], indirect=True)
-    @pytest.mark.parametrize("service_name,url_template",
-                             [(s, t) for s in apprise.service_names for t in apprise.get_service_templates(s)])
+    @pytest.mark.parametrize(
+        "service_name,url_template", [(s, t) for s in apprise.service_names for t in apprise.get_service_templates(s)]
+    )
     def test_edit_post_valid_service_and_url(self, logged_in_client, users_with_bots, service_name, url_template):
         bot = fk.random_element(users_with_bots[0][3])
         new_service_name = service_name
@@ -462,7 +475,7 @@ class TestBotEdit:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
         assert response.status_code == 200
         assert b"Bot edited successfully" in response.data
@@ -518,12 +531,13 @@ class TestBotEdit:
         bot = fk.random_element(users_with_bots[0][3])
         response = logged_in_client.post(
             f"/bots/edit/{bot.id}",
-            data=bot_kwargs | {
+            data=bot_kwargs
+                 | {
                 'is_tested': 'true',
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
@@ -548,7 +562,7 @@ class TestBotEdit:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
@@ -572,7 +586,7 @@ class TestBotEdit:
                 'test': 'false',
                 'submit': 'true',
             },
-            follow_redirects=True
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
@@ -696,8 +710,9 @@ class TestBotMessaging:
                 publication_doi=f'10.1234/dataset{i + 1}',
                 dataset_doi=f'10.1234/dataset{i + 1}',
                 tags='tag1, tag2',
-                ds_metrics_id=seeded_ds_metrics.id
-            ) for i in range(4)
+                ds_metrics_id=seeded_ds_metrics.id,
+            )
+            for i in range(4)
         ]
         seeded_ds_meta_data = self.seed(db, ds_meta_data_list)
 
@@ -706,8 +721,9 @@ class TestBotMessaging:
                 name=f'Author {i + 1}',
                 affiliation=f'Affiliation {i + 1}',
                 orcid=f'0000-0000-0000-000{i}',
-                ds_meta_data_id=seeded_ds_meta_data[i % 4].id
-            ) for i in range(4)
+                ds_meta_data_id=seeded_ds_meta_data[i % 4].id,
+            )
+            for i in range(4)
         ]
         seeded_authors = self.seed(db, authors)
 
@@ -715,8 +731,9 @@ class TestBotMessaging:
             DataSet(
                 user_id=user1.id if i % 2 == 0 else user2.id,
                 ds_meta_data_id=seeded_ds_meta_data[i].id,
-                created_at=datetime.now(timezone.utc)
-            ) for i in range(4)
+                created_at=datetime.now(timezone.utc),
+            )
+            for i in range(4)
         ]
         seeded_datasets = self.seed(db, datasets)
 
@@ -728,8 +745,9 @@ class TestBotMessaging:
                 publication_type=PublicationType.SOFTWARE_DOCUMENTATION,
                 publication_doi=f'10.1234/fm{i + 1}',
                 tags='tag1, tag2',
-                uvl_version='1.0'
-            ) for i in range(12)
+                uvl_version='1.0',
+            )
+            for i in range(12)
         ]
         seeded_fm_meta_data = self.seed(db, fm_meta_data_list)
 
@@ -738,16 +756,15 @@ class TestBotMessaging:
                 name=f'Author {i + 5}',
                 affiliation=f'Affiliation {i + 5}',
                 orcid=f'0000-0000-0000-000{i + 5}',
-                fm_meta_data_id=seeded_fm_meta_data[i].id
-            ) for i in range(12)
+                fm_meta_data_id=seeded_fm_meta_data[i].id,
+            )
+            for i in range(12)
         ]
         seeded_fm_authors = self.seed(db, fm_authors)
 
         feature_models = [
-            FeatureModel(
-                data_set_id=seeded_datasets[i // 3].id,
-                fm_meta_data_id=seeded_fm_meta_data[i].id
-            ) for i in range(12)
+            FeatureModel(data_set_id=seeded_datasets[i // 3].id, fm_meta_data_id=seeded_fm_meta_data[i].id)
+            for i in range(12)
         ]
         seeded_feature_models = self.seed(db, feature_models)
 
@@ -771,7 +788,7 @@ class TestBotMessaging:
                 name=file_name,
                 checksum=f'checksum{i + 1}',
                 size=os.path.getsize(file_path),
-                feature_model_id=feature_model.id
+                feature_model_id=feature_model.id,
             )
             seeded_files.append(self.seed(db, [uvl_file]))
 
@@ -790,12 +807,15 @@ class TestBotMessaging:
         new_service_name = fk.random_element(apprise.service_names)
         new_service_url = apprise.generate_url_example(new_service_name)
 
-        response = logged_in_client.post(f"/bots/edit/{bot.id}", data={
-            'service_name': new_service_name,
-            'service_url': new_service_url,
-            'test': 'true',
-            'submit': 'false',
-        })
+        response = logged_in_client.post(
+            f"/bots/edit/{bot.id}",
+            data={
+                'service_name': new_service_name,
+                'service_url': new_service_url,
+                'test': 'true',
+                'submit': 'false',
+            },
+        )
 
         assert response.status_code == 200
         assert '✔'.encode() in response.data
@@ -808,10 +828,12 @@ class TestBotMessaging:
     @patch("app.apprise.send_message")
     @pytest.mark.parametrize("logged_in_client", [1], indirect=True)
     @pytest.mark.parametrize("enabled", [True, False], ids=["enabled", "disabled"])
-    @pytest.mark.parametrize("on_download_dataset", [True, False],
-                             ids=["on_download_dataset", "not_on_download_dataset"])
-    def test_messaging_on_download_dataset(self, mock_send_message, logged_in_client, users_with_bots, enabled,
-                                           on_download_dataset):
+    @pytest.mark.parametrize(
+        "on_download_dataset", [True, False], ids=["on_download_dataset", "not_on_download_dataset"]
+    )
+    def test_messaging_on_download_dataset(
+            self, mock_send_message, logged_in_client, users_with_bots, enabled, on_download_dataset
+    ):
         uploader = users_with_bots[0][0]
         bot = users_with_bots[0][3][0]
         dataset = fk.random_element([ds for ds in DataSet.query.filter_by(user_id=uploader.id).all()])
@@ -839,14 +861,27 @@ class TestBotMessaging:
     @pytest.mark.parametrize("logged_in_client", [1], indirect=True)
     @pytest.mark.parametrize("enabled", [True, False], ids=["enabled", "disabled"])
     @pytest.mark.parametrize("on_download_file", [True, False], ids=["on_download_file", "not_on_download_file"])
-    @pytest.mark.parametrize("route,content_type,extension",
-                             [("/file/download", "application/octet-stream", '.uvl'),
-                              ("/flamapy/to_glencoe", "text/plain; charset=utf-8", ".uvl_glencoe.txt"),
-                              ("/flamapy/to_splot", "text/plain; charset=utf-8", '.uvl_splot.txt'),
-                              ("/flamapy/to_cnf", "text/plain; charset=utf-8", '.uvl_cnf.txt')],
-                             ids=["uvl", "glencoe", "splot", "cnf"])
-    def test_messaging_on_download_file(self, mock_send_message, logged_in_client, users_with_bots, enabled,
-                                        on_download_file, route, content_type, extension):
+    @pytest.mark.parametrize(
+        "route,content_type,extension",
+        [
+            ("/file/download", "application/octet-stream", '.uvl'),
+            ("/flamapy/to_glencoe", "text/plain; charset=utf-8", ".uvl_glencoe.txt"),
+            ("/flamapy/to_splot", "text/plain; charset=utf-8", '.uvl_splot.txt'),
+            ("/flamapy/to_cnf", "text/plain; charset=utf-8", '.uvl_cnf.txt'),
+        ],
+        ids=["uvl", "glencoe", "splot", "cnf"],
+    )
+    def test_messaging_on_download_file(
+            self,
+            mock_send_message,
+            logged_in_client,
+            users_with_bots,
+            enabled,
+            on_download_file,
+            route,
+            content_type,
+            extension,
+    ):
         uploader = users_with_bots[0][0]
         bot = users_with_bots[0][3][0]
         dataset = fk.random_element([ds for ds in DataSet.query.filter_by(user_id=uploader.id).all()])

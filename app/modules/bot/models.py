@@ -13,9 +13,7 @@ class Bot(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref='bots', lazy=True)
 
-    __table_args__ = (
-        db.UniqueConstraint('name', 'user_id', name='unique_name'),
-    )
+    __table_args__ = (db.UniqueConstraint('name', 'user_id', name='unique_name'),)
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
