@@ -108,13 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
             moreThan5KB: totalSize > 5120,
         };
         // Validate that `size` is one of the expected keys
-        if (size in sizeMap) {
-            return sizeMap[size];
-        } else {
+        if (!(size in sizeMap)) {
             console.warn(`Invalid size value: ${size}. Returning default value.`);
-            return true;  // or return false or another default based on your logic
+            return true;  // or your preferred default behavior
         }
-        return sizeMap[size] ?? true;
+
+        // Safely access the sizeMap with the validated key
+        return sizeMap[size];
     }
     
 

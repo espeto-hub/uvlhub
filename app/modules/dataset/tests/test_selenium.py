@@ -171,4 +171,4 @@ def test_upload_dataset():
 
 
 # Call the test function
-# test_upload_dataset()
+test_upload_dataset()
