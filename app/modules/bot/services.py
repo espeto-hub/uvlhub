@@ -69,7 +69,7 @@ class BotMessagingService(BaseService):
         if profile:
             body += f" by {profile.name} {profile.surname}"
         else:
-            body = f" by an anonymous user"
+            body = " by an anonymous user"
         service = BotService()
         urls = service.get_on_download_dataset_bot_urls(uploader_id)
         apprise.send_message(urls, title=title, body=body)

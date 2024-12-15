@@ -8,9 +8,11 @@ from app import apprise
 class BotForm(FlaskForm):
     id = wtforms.HiddenField()
     name = wtforms.StringField('Name', validators=[DataRequired('Please input a name.'), Length(min=3, max=50)])
-    service_name = wtforms.SelectField('Service', choices=['Select one...'] + apprise.service_names,
-                                       validators=[DataRequired('Please select a service'),
-                                                   NoneOf(['Select one...'], 'Please select a service')])
+    service_name = wtforms.SelectField(
+        'Service',
+        choices=['Select one...'] + apprise.service_names,
+        validators=[DataRequired('Please select a service'), NoneOf(['Select one...'], 'Please select a service')],
+    )
     service_url = wtforms.URLField('URL', validators=[DataRequired('Please input an URL.')])
     enabled = wtforms.BooleanField('Enabled', default=True)
     on_download_dataset = wtforms.BooleanField('When someone downloads one of my datasets', default=False)
