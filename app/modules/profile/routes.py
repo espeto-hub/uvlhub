@@ -35,14 +35,14 @@ def my_profile():
     page = request.args.get('page', 1, type=int)
     per_page = 5
 
-    user_datasets_pagination = db.session.query(DataSet) \
-        .filter(DataSet.user_id == current_user.id) \
-        .order_by(DataSet.created_at.desc()) \
+    user_datasets_pagination = (
+        db.session.query(DataSet)
+        .filter(DataSet.user_id == current_user.id)
+        .order_by(DataSet.created_at.desc())
         .paginate(page=page, per_page=per_page, error_out=False)
+    )
 
-    total_datasets_count = db.session.query(DataSet) \
-        .filter(DataSet.user_id == current_user.id) \
-        .count()
+    total_datasets_count = db.session.query(DataSet).filter(DataSet.user_id == current_user.id).count()
 
     print(user_datasets_pagination.items)
 
@@ -52,8 +52,9 @@ def my_profile():
         user=current_user,
         datasets=user_datasets_pagination.items,
         pagination=user_datasets_pagination,
-        total_datasets=total_datasets_count
+        total_datasets=total_datasets_count,
     )
+
 
 # Allows to go to the profile of the user selected
 
@@ -69,14 +70,14 @@ def user_profile(user_id):
         abort(404)  # Retorna un error 404 si el usuario no existe
 
     # Obtener los datasets del usuario
-    user_datasets_pagination = db.session.query(DataSet) \
-        .filter(DataSet.user_id == user_id) \
-        .order_by(DataSet.created_at.desc()) \
+    user_datasets_pagination = (
+        db.session.query(DataSet)
+        .filter(DataSet.user_id == user_id)
+        .order_by(DataSet.created_at.desc())
         .paginate(page=page, per_page=per_page, error_out=False)
+    )
 
-    total_datasets_count = db.session.query(DataSet) \
-        .filter(DataSet.user_id == user_id) \
-        .count()
+    total_datasets_count = db.session.query(DataSet).filter(DataSet.user_id == user_id).count()
 
     return render_template(
         'profile/summary.html',
@@ -84,5 +85,5 @@ def user_profile(user_id):
         user=user,
         datasets=user_datasets_pagination.items,
         pagination=user_datasets_pagination,
-        total_datasets=total_datasets_count
+        total_datasets=total_datasets_count,
     )

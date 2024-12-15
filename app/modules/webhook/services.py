@@ -26,7 +26,7 @@ class WebhookService(BaseService):
                 for mount in container.attrs['Mounts']
                 if mount['Destination'] == '/app'
             ),
-            None
+            None,
         )
 
         if not volume_name:
@@ -36,13 +36,21 @@ class WebhookService(BaseService):
 
     def execute_host_command(self, volume_name, command):
         try:
-            subprocess.run([
-                'docker', 'run', '--rm',
-                '-v', f'{volume_name}:/app',
-                '-v', '/var/run/docker.sock:/var/run/docker.sock',
-                '-w', '/app',
-                *command
-            ], check=True)
+            subprocess.run(
+                [
+                    'docker',
+                    'run',
+                    '--rm',
+                    '-v',
+                    f'{volume_name}:/app',
+                    '-v',
+                    '/var/run/docker.sock:/var/run/docker.sock',
+                    '-w',
+                    '/app',
+                    *command,
+                ],
+                check=True,
+            )
         except subprocess.CalledProcessError as e:
             abort(500, description=f"Host command failed: {str(e)}")
 

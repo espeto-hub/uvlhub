@@ -30,8 +30,7 @@ class ExploreRepository(BaseRepository):
             filters.append(DSMetaData.tags.ilike(f"%{word}%"))
 
         datasets = (
-            self.model.query
-            .join(DataSet.ds_meta_data)
+            self.model.query.join(DataSet.ds_meta_data)
             .join(DSMetaData.authors)
             .join(DataSet.feature_models)
             .join(FeatureModel.fm_meta_data)

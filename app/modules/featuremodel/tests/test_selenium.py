@@ -6,7 +6,6 @@ from core.selenium.common import initialize_driver, close_driver
 
 
 def test_featuremodel_index():
-
     driver = initialize_driver()
 
     try:
@@ -19,14 +18,12 @@ def test_featuremodel_index():
         time.sleep(4)
 
         try:
-
             pass
 
         except NoSuchElementException:
             raise AssertionError('Test failed!')
 
     finally:
-
         # Close the browser
         close_driver(driver)
 
