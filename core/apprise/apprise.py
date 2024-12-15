@@ -101,7 +101,8 @@ class AppriseExtension:
                                     )
                                 if token_details.get('min') is not None and int(value) < token_details['min']:
                                     template_matches[template]['errors'].append(
-                                        f'{token_details["name"]} must be greater than or equal to {token_details["min"]}'
+                                        f'{token_details["name"]} must be greater than'
+                                        f' or equal to {token_details["min"]}'
                                     )
                                 if token_details.get('max') is not None and int(value) > token_details['max']:
                                     template_matches[template]['errors'].append(
@@ -114,7 +115,8 @@ class AppriseExtension:
                                     )
                                 if token_details.get('min') is not None and float(value) < token_details['min']:
                                     template_matches[template]['errors'].append(
-                                        f'{token_details["name"]} must be greater than or equal to {token_details["min"]}'
+                                        f'{token_details["name"]} must be greater than'
+                                        f' or equal to {token_details["min"]}'
                                     )
                                 if token_details.get('max') is not None and float(value) > token_details['max']:
                                     template_matches[template]['errors'].append(
@@ -125,9 +127,11 @@ class AppriseExtension:
                                     try:
                                         if not re.match(token_details['regex'][0], value):
                                             template_matches[template]['errors'].append(
-                                                f'Invalid string for {token_details["name"]}, must match regular expression {token_details["regex"][0]}, got {value}'
+                                                f'Invalid string for {token_details["name"]},'
+                                                f' must match regular expression {token_details["regex"][0]},'
+                                                f' got {value}'
                                             )
-                                    except Exception as _:
+                                    except re.error:
                                         continue
                             case 'list:int':
                                 continue
@@ -163,28 +167,37 @@ class AppriseExtension:
                                                         regex_errors.append(group_token_details["regex"][0])
                                                     else:
                                                         regex_errors.append(None)
-                                                except:
+                                                except re.error:
                                                     pass
                                             else:
                                                 regex_errors.append(None)
                                         if None not in regex_errors:
                                             regex_errors = [x for x in regex_errors if x is not None]
                                             template_matches[template]['errors'].append(
-                                                f'Invalid list:string value for {token_details["name"]} on {values.index(v)}º element, must match one of these regular expressions: {", ".join(regex_errors)}, got {v}'
+                                                f'Invalid list:string value for {token_details["name"]}'
+                                                f' on {values.index(v)}º element,'
+                                                ' must match one of these regular expressions:'
+                                                f' {", ".join(regex_errors)},'
+                                                f' got {v}'
                                             )
                                     else:
                                         if token_details.get('regex'):
                                             try:
                                                 if not re.match(token_details['regex'][0], v):
                                                     template_matches[template]['errors'].append(
-                                                        f'Invalid list:string value for {token_details["name"]} on {values.index(v)}º element, must match regular expression {token_details["regex"][0]}, got {v}'
+                                                        f'Invalid list:string value for {token_details["name"]}'
+                                                        f' on {values.index(v)}º element,'
+                                                        f' must match regular expression {token_details["regex"][0]},'
+                                                        f' got {v}'
                                                     )
-                                            except:
+                                            except re.error:
                                                 pass
                             case t if 'choice:' in t or 'bool' in t:
                                 if value not in token_details['values']:
                                     template_matches[template]['errors'].append(
-                                        f'Invalid choice for {token_details["name"]}, got {value}, must be one of {", ".join(token_details["values"])}'
+                                        f'Invalid choice for {token_details["name"]},'
+                                        f' got {value},'
+                                        f' must be one of {", ".join(token_details["values"])}'
                                     )
                 except Exception as e:
                     template_matches[template]['match'] = False
@@ -259,7 +272,7 @@ class AppriseExtension:
                         if details.get('regex') is not None:
                             try:
                                 example = example.replace(f'{{{token}}}', self.faker.regex(details['regex'][0]))
-                            except:
+                            except re.error:
                                 example = example.replace(f'{{{token}}}', self.faker.pystr(min_chars=5, max_chars=100))
                         else:
                             example = example.replace(f'{{{token}}}', self.faker.pystr(min_chars=5, max_chars=20))
@@ -347,7 +360,7 @@ class AppriseExtension:
         html += '<table class="table">'
         html += '<tr><th>Token</th><th>Required</th><th>Type</th><th>Constraints</th></tr>'
         for token_name, details in sorted(
-                service_details['tokens'].items(), key=lambda x: (not x[1]['required'], x[1]['name'])
+            service_details['tokens'].items(), key=lambda x: (not x[1]['required'], x[1]['name'])
         ):
             if token_name == 'schema':
                 continue
@@ -355,19 +368,19 @@ class AppriseExtension:
             html += f'<td>{"Yes" if details["required"] else "No"}</td>'
             match details["type"]:
                 case 'int':
-                    html += f'<td>Integer</td>'
+                    html += '<td>Integer</td>'
                 case 'float':
-                    html += f'<td>Float</td>'
+                    html += '<td>Float</td>'
                 case 'string':
-                    html += f'<td>String</td>'
+                    html += '<td>String</td>'
                 case 'list:int':
-                    html += f'<td>List of integers</td>'
+                    html += '<td>List of integers</td>'
                 case 'list:float':
-                    html += f'<td>List of floats</td>'
+                    html += '<td>List of floats</td>'
                 case 'list:string':
-                    html += f'<td>List of strings</td>'
+                    html += '<td>List of strings</td>'
                 case t if 'choice:' in t or 'bool' in t:
-                    html += f'<td>Choice</td>'
+                    html += '<td>Choice</td>'
             constraints = []
             if details.get('min') is not None:
                 constraints.append(f'<strong>Min:</strong> {details["min"]}')
@@ -385,5 +398,11 @@ class AppriseExtension:
             html += f'<li>{self.generate_url_example(service_name)}</li>'
         html += '</ul>'
         html += '<h2>Information</h2>'
-        html += f"<p>For obtaining the required tokens, visit the <a href='{service['service_url']}' target='_blank'>service's page</a>.<br>For more parameters and examples, visit the <a href='{service['setup_url']}' target='_blank'>documentation</a>.</p>"
+        html += (
+            "<p>For obtaining the required tokens, visit the "
+            f"<a href='{service['service_url']}' target='_blank'>service's page</a>."
+            "<br>"
+            "For more parameters and examples, visit the "
+            f"<a href='{service['setup_url']}' target='_blank'>documentation</a>.</p>"
+        )
         return html
