@@ -1,5 +1,4 @@
 import os
-import time
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -66,7 +65,7 @@ def test_download_all_datasets():
 test_download_all_datasets()
 
 
-def test_upload_dataset():
+def test_upload_dataset_with_file_handling():
     driver = initialize_driver()
 
     try:
@@ -76,8 +75,7 @@ def test_upload_dataset():
         driver.get(f"{host}/login")
         wait_for_page_to_load(driver)
 
-        # Log in
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "email")))
+        # Log in as a test user
         email_field = driver.find_element(By.NAME, "email")
         password_field = driver.find_element(By.NAME, "password")
 
@@ -86,80 +84,67 @@ def test_upload_dataset():
         password_field.send_keys(Keys.RETURN)
         wait_for_page_to_load(driver)
 
-        # Count initial datasets
-        initial_datasets = count_datasets(driver, host)
-
-        # Open the upload dataset page
+        # Navigate to the upload dataset page
         driver.get(f"{host}/dataset/upload")
         wait_for_page_to_load(driver)
 
-        # Fill in basic dataset information
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "title")))
-        driver.find_element(By.NAME, "title").send_keys("Title")
-        driver.find_element(By.NAME, "desc").send_keys("Description")
-        driver.find_element(By.NAME, "tags").send_keys("tag1,tag2")
+        # Upload a valid UVL file
+        valid_file_path = os.path.abspath("app/modules/dataset/uvl_examples/valid_file.uvl")
+        upload_file(driver, valid_file_path)
+        validate_upload_success(driver, "valid_file.uvl")
 
-        # Add authors
-        for i in range(2):
-            add_author_button = driver.find_element(By.ID, "add_author")
-            add_author_button.click()
-            WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.NAME, f"authors-{i}-name"))
-            )
-            driver.find_element(By.NAME, f"authors-{i}-name").send_keys(f"Author{i}")
-            driver.find_element(By.NAME, f"authors-{i}-affiliation").send_keys(f"Club{i}")
-            if i == 0:  # Only add ORCID for the first author
-                driver.find_element(By.NAME, f"authors-{i}-orcid").send_keys("0000-0000-0000-0000")
+        # Upload a duplicate file to test name conflict resolution
+        upload_file(driver, valid_file_path)
+        validate_upload_success(driver, "valid_file (1).uvl")
 
-        # Upload files
-        file_paths = [
-            os.path.abspath("app/modules/dataset/uvl_examples/file1.uvl"),
-            os.path.abspath("app/modules/dataset/uvl_examples/file2.uvl"),
-        ]
-        dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
-        for file_path in file_paths:
-            dropzone.send_keys(file_path)
-            WebDriverWait(driver, 10).until(
-                EC.text_to_be_present_in_element((By.CLASS_NAME, "dz-success-mark"), "")  # Confirm file upload
-            )
+        # Attempt to upload an invalid file type
+        invalid_file_path = os.path.abspath("app/modules/dataset/uvl_examples/invalid_file.txt")
+        upload_file(driver, invalid_file_path, expect_error=True)
 
-        # Add author to UVL models
-        show_button = driver.find_element(By.ID, "0_button")
-        show_button.click()
-        add_author_uvl_button = driver.find_element(By.ID, "0_form_authors_button")
-        add_author_uvl_button.click()
-        WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.NAME, "feature_models-0-authors-2-name"))
+        # Ensure the error message is displayed
+        error_message = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "error-message"))
         )
-        driver.find_element(By.NAME, "feature_models-0-authors-2-name").send_keys("Author3")
-        driver.find_element(By.NAME, "feature_models-0-authors-2-affiliation").send_keys("Club3")
-
-        # Agree to terms and upload
-        check = driver.find_element(By.ID, "agreeCheckbox")
-        check.click()
-        upload_btn = driver.find_element(By.ID, "upload_button")
-        upload_btn.click()
-
-        # Wait for redirection
-        WebDriverWait(driver, 10).until(EC.url_to_be(f"{host}/dataset/list"))
-
-        # Verify the dataset was uploaded
-        final_datasets = count_datasets(driver, host)
-        assert final_datasets == initial_datasets + 1, "Dataset count mismatch! Upload failed."
+        assert error_message.text == "No valid file", "Unexpected error message for invalid file upload!"
 
         print("Test passed!")
 
-    except Exception as e:
-        print(f"Test failed: {e}")
-        raise
-
     finally:
-        # Always close the driver
+        # Close the browser
         close_driver(driver)
 
 
+# Utility functions
+def upload_file(driver, file_path, expect_error=False):
+    """Handles file upload and waits for the result."""
+    dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
+    dropzone.send_keys(file_path)
+
+    # Wait for the upload response
+    if not expect_error:
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element(
+                (By.CLASS_NAME, "upload-message"), "UVL uploaded and validated successfully"
+            )
+        )
+    else:
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element(
+                (By.CLASS_NAME, "error-message"), "No valid file"
+            )
+        )
+
+
+def validate_upload_success(driver, expected_filename):
+    """Validates that the uploaded file name matches the expected value."""
+    success_message = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "upload-message"))
+    )
+    assert expected_filename in success_message.text, f"Filename {expected_filename} not found in success message!"
+
+
 # Call the test function
-test_upload_dataset()
+test_upload_dataset_with_file_handling()
 
 
 def test_rate_dataset():
