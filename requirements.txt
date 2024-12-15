@@ -102,4 +102,4 @@ zope.event==5.0
 zope.interface==6.4.post2
 zstandard==0.22.0
 black==24.3.0
-pre-commit==3.0.1
+pre-commit==4.0.1
