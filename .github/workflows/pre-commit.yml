@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
 
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
@@ -25,6 +25,6 @@ jobs:
         pip install black==24.3.0
 
     - name: Run Pre-Commit Hooks
-      uses: pre-commit/action@3c22b687f2fe849a61810b57cf34660e734f2bfa
+      uses: pre-commit/action@v3.0.1
       with:
         extra_args: --all-files
