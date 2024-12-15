@@ -4,18 +4,12 @@ from app.modules.auth.models import User
 from app.modules.featuremodel.models import FMMetaData, FeatureModel
 from app.modules.hubfile.models import Hubfile
 from core.seeders.BaseSeeder import BaseSeeder
-from app.modules.dataset.models import (
-    DataSet,
-    DSMetaData,
-    PublicationType,
-    DSMetrics,
-    Author)
+from app.modules.dataset.models import DataSet, DSMetaData, PublicationType, DSMetrics, Author
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 
 class DataSetSeeder(BaseSeeder):
-
     priority = 2  # Lower priority
 
     def run(self):
@@ -40,8 +34,9 @@ class DataSetSeeder(BaseSeeder):
                 publication_doi=f'10.1234/dataset{i+1}',
                 dataset_doi=f'10.1234/dataset{i+1}',
                 tags='tag1, tag2',
-                ds_metrics_id=seeded_ds_metrics.id
-            ) for i in range(4)
+                ds_metrics_id=seeded_ds_metrics.id,
+            )
+            for i in range(4)
         ]
         seeded_ds_meta_data = self.seed(ds_meta_data_list)
 
@@ -51,8 +46,9 @@ class DataSetSeeder(BaseSeeder):
                 name=f'Author {i+1}',
                 affiliation=f'Affiliation {i+1}',
                 orcid=f'0000-0000-0000-000{i}',
-                ds_meta_data_id=seeded_ds_meta_data[i % 4].id
-            ) for i in range(4)
+                ds_meta_data_id=seeded_ds_meta_data[i % 4].id,
+            )
+            for i in range(4)
         ]
         self.seed(authors)
 
@@ -61,8 +57,9 @@ class DataSetSeeder(BaseSeeder):
             DataSet(
                 user_id=user1.id if i % 2 == 0 else user2.id,
                 ds_meta_data_id=seeded_ds_meta_data[i].id,
-                created_at=datetime.now(timezone.utc)
-            ) for i in range(4)
+                created_at=datetime.now(timezone.utc),
+            )
+            for i in range(4)
         ]
         seeded_datasets = self.seed(datasets)
 
@@ -75,8 +72,9 @@ class DataSetSeeder(BaseSeeder):
                 publication_type=PublicationType.SOFTWARE_DOCUMENTATION,
                 publication_doi=f'10.1234/fm{i+1}',
                 tags='tag1, tag2',
-                uvl_version='1.0'
-            ) for i in range(12)
+                uvl_version='1.0',
+            )
+            for i in range(12)
         ]
         seeded_fm_meta_data = self.seed(fm_meta_data_list)
 
@@ -86,16 +84,15 @@ class DataSetSeeder(BaseSeeder):
                 name=f'Author {i+5}',
                 affiliation=f'Affiliation {i+5}',
                 orcid=f'0000-0000-0000-000{i+5}',
-                fm_meta_data_id=seeded_fm_meta_data[i].id
-            ) for i in range(12)
+                fm_meta_data_id=seeded_fm_meta_data[i].id,
+            )
+            for i in range(12)
         ]
         self.seed(fm_authors)
 
         feature_models = [
-            FeatureModel(
-                data_set_id=seeded_datasets[i // 3].id,
-                fm_meta_data_id=seeded_fm_meta_data[i].id
-            ) for i in range(12)
+            FeatureModel(data_set_id=seeded_datasets[i // 3].id, fm_meta_data_id=seeded_fm_meta_data[i].id)
+            for i in range(12)
         ]
         seeded_feature_models = self.seed(feature_models)
 
@@ -119,6 +116,6 @@ class DataSetSeeder(BaseSeeder):
                 name=file_name,
                 checksum=f'checksum{i+1}',
                 size=os.path.getsize(file_path),
-                feature_model_id=feature_model.id
+                feature_model_id=feature_model.id,
             )
             self.seed([uvl_file])

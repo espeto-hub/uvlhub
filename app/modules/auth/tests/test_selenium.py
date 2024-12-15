@@ -8,7 +8,6 @@ from core.selenium.common import initialize_driver, close_driver
 
 
 def test_login_and_check_element():
-
     driver = initialize_driver()
 
     try:
@@ -34,7 +33,6 @@ def test_login_and_check_element():
         time.sleep(4)
 
         try:
-
             driver.find_element(By.XPATH, "//h1[contains(@class, 'h2 mb-3') and contains(., 'Latest datasets')]")
             print('Test passed!')
 
@@ -42,7 +40,6 @@ def test_login_and_check_element():
             raise AssertionError('Test failed!')
 
     finally:
-
         # Close the browser
         close_driver(driver)
 
