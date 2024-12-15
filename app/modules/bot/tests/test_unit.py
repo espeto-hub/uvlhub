@@ -22,14 +22,14 @@ from app.modules.profile.models import UserProfile
 @pytest.fixture(scope="module")
 def bot_generator(faker):
     def random_valid_bot(
-            user,
-            name=None,
-            service_name=None,
-            service_url=None,
-            enabled=None,
-            on_download_dataset=None,
-            on_download_file=None,
-            url_template=None,
+        user,
+        name=None,
+        service_name=None,
+        service_url=None,
+        enabled=None,
+        on_download_dataset=None,
+        on_download_file=None,
+        url_template=None,
     ):
 
         if service_name is None:
@@ -532,7 +532,7 @@ class TestBotEdit:
         response = logged_in_client.post(
             f"/bots/edit/{bot.id}",
             data=bot_kwargs
-                 | {
+            | {
                 'is_tested': 'true',
                 'test': 'false',
                 'submit': 'true',
@@ -832,7 +832,7 @@ class TestBotMessaging:
         "on_download_dataset", [True, False], ids=["on_download_dataset", "not_on_download_dataset"]
     )
     def test_messaging_on_download_dataset(
-            self, mock_send_message, logged_in_client, users_with_bots, enabled, on_download_dataset
+        self, mock_send_message, logged_in_client, users_with_bots, enabled, on_download_dataset
     ):
         uploader = users_with_bots[0][0]
         bot = users_with_bots[0][3][0]
@@ -872,15 +872,15 @@ class TestBotMessaging:
         ids=["uvl", "glencoe", "splot", "cnf"],
     )
     def test_messaging_on_download_file(
-            self,
-            mock_send_message,
-            logged_in_client,
-            users_with_bots,
-            enabled,
-            on_download_file,
-            route,
-            content_type,
-            extension,
+        self,
+        mock_send_message,
+        logged_in_client,
+        users_with_bots,
+        enabled,
+        on_download_file,
+        route,
+        content_type,
+        extension,
     ):
         uploader = users_with_bots[0][0]
         bot = users_with_bots[0][3][0]
