@@ -17,13 +17,13 @@ from app.modules.dataset.repositories import (
     DSDownloadRecordRepository,
     DSMetaDataRepository,
     DSViewRecordRepository,
-    DataSetRepository
+    DataSetRepository,
 )
 from app.modules.featuremodel.repositories import FMMetaDataRepository, FeatureModelRepository
 from app.modules.hubfile.repositories import (
     HubfileDownloadRecordRepository,
     HubfileRepository,
-    HubfileViewRecordRepository
+    HubfileViewRecordRepository,
 )
 from core.services.BaseService import BaseService
 
@@ -160,9 +160,7 @@ class DataSetService(BaseService):
 
                     zipf.write(
                         full_path,
-                        arcname=os.path.join(
-                            os.path.basename(zip_path[:-4]), relative_path
-                        ),
+                        arcname=os.path.join(os.path.basename(zip_path[:-4]), relative_path),
                     )
 
         return temp_dir
@@ -218,11 +216,10 @@ class DSViewRecordService(BaseService):
     def the_record_exists(self, dataset: DataSet, user_cookie: str):
         return self.repository.the_record_exists(dataset, user_cookie)
 
-    def create_new_record(self, dataset: DataSet,  user_cookie: str) -> DSViewRecord:
+    def create_new_record(self, dataset: DataSet, user_cookie: str) -> DSViewRecord:
         return self.repository.create_new_record(dataset, user_cookie)
 
     def create_cookie(self, dataset: DataSet) -> str:
-
         user_cookie = request.cookies.get("view_cookie")
         if not user_cookie:
             user_cookie = str(uuid.uuid4())
@@ -247,17 +244,16 @@ class DOIMappingService(BaseService):
             return None
 
 
-class SizeService():
-
+class SizeService:
     def __init__(self):
         pass
 
     def get_human_readable_size(self, size: int) -> str:
         if size < 1024:
             return f'{size} bytes'
-        elif size < 1024 ** 2:
+        elif size < 1024**2:
             return f'{round(size / 1024, 2)} KB'
-        elif size < 1024 ** 3:
+        elif size < 1024**3:
             return f'{round(size / (1024 ** 2), 2)} MB'
         else:
             return f'{round(size / (1024 ** 3), 2)} GB'

@@ -38,11 +38,7 @@ class Author(db.Model):
     fm_meta_data_id = db.Column(db.Integer, db.ForeignKey('fm_meta_data.id'))
 
     def to_dict(self):
-        return {
-            'name': self.name,
-            'affiliation': self.affiliation,
-            'orcid': self.orcid
-        }
+        return {'name': self.name, 'affiliation': self.affiliation, 'orcid': self.orcid}
 
 
 class DSMetrics(db.Model):
@@ -86,6 +82,7 @@ class DataSet(db.Model):
 
     def is_synchronized(self) -> bool:
         from app.modules.dataset.services import DataSetService
+
         return DataSetService.is_synchronized(dataset_id=self.id)
 
     def delete(self):
@@ -106,10 +103,12 @@ class DataSet(db.Model):
 
     def get_file_total_size_for_human(self):
         from app.modules.dataset.services import SizeService
+
         return SizeService().get_human_readable_size(self.get_file_total_size())
 
     def get_uvlhub_doi(self):
         from app.modules.dataset.services import DataSetService
+
         return DataSetService().get_uvlhub_doi(self)
 
     def to_dict(self):

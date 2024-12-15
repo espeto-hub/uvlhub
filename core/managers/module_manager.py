@@ -28,14 +28,16 @@ class ModuleManager:
         self.app.blueprint_url_prefixes = {}
 
         for module_name in os.listdir(self.modules_dir):
-
             if module_name in self.ignored_modules:
                 continue
 
             module_path = os.path.join(self.modules_dir, module_name)
-            if (os.path.isdir(module_path) and not module_name.startswith('__') and
-                    os.path.exists(os.path.join(module_path, '__init__.py')) and
-                    module_name != '.pytest_cache'):
+            if (
+                os.path.isdir(module_path)
+                and not module_name.startswith('__')
+                and os.path.exists(os.path.join(module_path, '__init__.py'))
+                and module_name != '.pytest_cache'
+            ):
                 try:
                     routes_module = importlib.import_module(f'app.modules.{module_name}.routes')
                     for item in dir(routes_module):
@@ -43,9 +45,7 @@ class ModuleManager:
                             blueprint = getattr(routes_module, item)
                             self.app.register_blueprint(blueprint)
                 except ModuleNotFoundError as e:
-                    print(
-                        f"Error registering modules: Could not load the module "
-                        f"for Module '{module_name}': {e}")
+                    print(f"Error registering modules: Could not load the module " f"for Module '{module_name}': {e}")
 
     def register_module(self, module_name):
         module_path = os.path.join(self.modules_dir, module_name)
@@ -79,9 +79,12 @@ class ModuleManager:
         all_modules = []
         for module_name in os.listdir(self.modules_dir):
             module_path = os.path.join(self.modules_dir, module_name)
-            if (os.path.isdir(module_path) and not module_name.startswith('__') and
-                    os.path.exists(os.path.join(module_path, '__init__.py')) and
-                    module_name != '.pytest_cache'):
+            if (
+                os.path.isdir(module_path)
+                and not module_name.startswith('__')
+                and os.path.exists(os.path.join(module_path, '__init__.py'))
+                and module_name != '.pytest_cache'
+            ):
                 all_modules.append(module_name)
         loaded_modules = [m for m in all_modules if m not in self.ignored_modules]
         return loaded_modules, self.ignored_modules

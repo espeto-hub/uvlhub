@@ -16,10 +16,7 @@ def create_deposition():
 
 @fakenodo_bp.route("/fakenodo/api/<deposition_id>/files", methods=["POST"])
 def create_deposition_files(deposition_id):
-    response = {
-        "status": "success",
-        "message": "You have successfuly uploaded deposition files in Fakenodo."
-        }
+    response = {"status": "success", "message": "You have successfuly uploaded deposition files in Fakenodo."}
     return make_response(jsonify(response), 201)
 
 
@@ -38,7 +35,8 @@ def publish_deposition(deposition_id):
 @fakenodo_bp.route("/fakenodo/api/<deposition_id>", methods=["GET"])
 def get_deposition(deposition_id):
     response = {
-        "status": "success", "message": "You have successfully retrieved a deposition in Fakenodo",
+        "status": "success",
+        "message": "You have successfully retrieved a deposition in Fakenodo",
         "doi": "10.1234/fakenodo.123456",
     }
     return make_response(jsonify(response), 200)

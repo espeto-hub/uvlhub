@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write 
+      pull-requests: write
     steps:
       - name: Check if it has none of the correct tags
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'WI') && !contains(github.event.pull_request.labels.*.name, 'incidencia') }}

@@ -13,22 +13,22 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
-      
+
       - name: Log in to GHCR
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Build Docker image
         run: docker build --build-arg VERSION_TAG=${{ github.event.release.tag_name }} -t ghcr.io/espeto-hub/uvlhub:${{ github.event.release.tag_name }} -f docker/images/Dockerfile.prod .
         env:
           DOCKER_CLI_EXPERIMENTAL: enabled
-          
+
       - name: Push Docker image to Github Container Registry
         run: docker push ghcr.io/espeto-hub/uvlhub:${{ github.event.release.tag_name }}
-        
+
       - name: Tag and push latest to Github Container Registry
         run: |
           docker tag ghcr.io/espeto-hub/uvlhub:${{ github.event.release.tag_name }} ghcr.io/espeto-hub/uvlhub:latest
