@@ -673,7 +673,7 @@ class TestBotGuide:
 
 
 @pytest.mark.parametrize("users", [2], indirect=True)
-@pytest.mark.parametrize("users_with_bots", [2], indirect=True)
+@pytest.mark.parametrize("users_with_bots", [1], indirect=True)
 class TestBotMessaging:
     def seed(self, db, data):
         if not data:
