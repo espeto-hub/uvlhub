@@ -12,8 +12,6 @@ setup(
     author_email='drorganvidez@us.es',
     description="Rosemary is a CLI to be able to work on UVLHub development more easily.",
     entry_points={
-        'console_scripts': [
-            'rosemary=rosemary.cli:cli'
-        ],
+        'console_scripts': ['rosemary=rosemary.cli:cli'],
     },
 )

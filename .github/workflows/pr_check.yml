@@ -2,7 +2,7 @@ name: Check PR attributes
 
 on:
   pull_request:
-    types: [opened, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
+    types: [opened, edited, synchronize, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
     branches:
       - main
 
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write 
+      pull-requests: write
     steps:
       - name: Check if it has none of the correct tags
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'WI') && !contains(github.event.pull_request.labels.*.name, 'incidencia') }}

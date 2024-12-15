@@ -47,7 +47,7 @@ jobs:
         run: |
           pip install codacy-coverage
           coverage run -m pytest app/modules/ --ignore-glob='*selenium*'
-          coverage xml 
+          coverage xml
           python-codacy-coverage -r coverage.xml
         env:
           FLASK_ENV: testing

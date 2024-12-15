@@ -12,8 +12,7 @@ def pascalcase(s):
 def setup_jinja_env():
     """Configures and returns a Jinja environment."""
     env = Environment(
-        loader=FileSystemLoader(searchpath="./rosemary/templates"),
-        autoescape=select_autoescape(['html', 'xml', 'j2'])
+        loader=FileSystemLoader(searchpath="./rosemary/templates"), autoescape=select_autoescape(['html', 'xml', 'j2'])
     )
     env.filters['pascalcase'] = pascalcase
     return env
@@ -54,7 +53,7 @@ def make_module(name):
         'assets/scripts.js': 'module_scripts.js.j2',
         'tests/test_unit.py': 'module_tests_test_unit.py.j2',
         'tests/locustfile.py': 'module_tests_locustfile.py.j2',
-        'tests/test_selenium.py': 'module_tests_test_selenium.py.j2'
+        'tests/test_selenium.py': 'module_tests_test_selenium.py.j2',
     }
 
     # Create the necessary directories, explicitly excluding 'tests' from the creation of subfolders.

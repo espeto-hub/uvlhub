@@ -7,7 +7,6 @@ from core.selenium.common import initialize_driver, close_driver
 
 
 def test_fakenodo_connection():
-
     driver = initialize_driver()
 
     try:

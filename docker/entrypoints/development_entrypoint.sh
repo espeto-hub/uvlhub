@@ -3,9 +3,9 @@
 # ---------------------------------------------------------------------------
 # Creative Commons CC BY 4.0 - David Romero - Diverso Lab
 # ---------------------------------------------------------------------------
-# This script is licensed under the Creative Commons Attribution 4.0 
-# International License. You are free to share and adapt the material 
-# as long as appropriate credit is given, a link to the license is provided, 
+# This script is licensed under the Creative Commons Attribution 4.0
+# International License. You are free to share and adapt the material
+# as long as appropriate credit is given, a link to the license is provided,
 # and you indicate if changes were made.
 #
 # For more details, visit:
@@ -33,7 +33,7 @@ fi
 
 # Check if the database is empty
 if [ $(mariadb -u $MARIADB_USER -p$MARIADB_PASSWORD -h $MARIADB_HOSTNAME -P $MARIADB_PORT -D $MARIADB_DATABASE -sse "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '$MARIADB_DATABASE';") -eq 0 ]; then
- 
+
     echo "Empty database, migrating..."
 
     # Get the latest migration revision
@@ -53,7 +53,7 @@ else
 
     # Get the current revision to avoid duplicate stamp
     CURRENT_REVISION=$(mariadb -u $MARIADB_USER -p$MARIADB_PASSWORD -h $MARIADB_HOSTNAME -P $MARIADB_PORT -D $MARIADB_DATABASE -sse "SELECT version_num FROM alembic_version LIMIT 1;")
-    
+
     if [ -z "$CURRENT_REVISION" ]; then
         # If no current revision, stamp with the latest revision
         flask db stamp head
