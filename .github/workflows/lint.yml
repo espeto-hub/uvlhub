@@ -1,11 +1,6 @@
 name: Python Lint
 
 on:
-  workflow_run:
-    workflows: ["Pre-Commit Checks"]
-    types:
-      - completed
-
   push:
     branches: [main, develop]
   pull_request:
