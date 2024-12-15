@@ -36,18 +36,16 @@ from app.modules.dataset.services import (
     DOIMappingService,
     RatingService,
 )
-from app.modules.fakenodo.services import FakenodoService
+from app.modules.zenodo.services import ZenodoService  # Cambiado de FakenodoService a ZenodoService
 
 logger = logging.getLogger(__name__)
-
 
 dataset_service = DataSetService()
 author_service = AuthorService()
 dsmetadata_service = DSMetaDataService()
-fakenodo_service = FakenodoService()
+zenodo_service = ZenodoService()  # Cambiado de FakenodoService a ZenodoService
 doi_mapping_service = DOIMappingService()
 ds_view_record_service = DSViewRecordService()
-
 
 @dataset_bp.route("/dataset/upload", methods=["GET", "POST"])
 @login_required
@@ -73,36 +71,36 @@ def create_dataset():
             logger.exception(f"Exception while creating dataset data in local {exc}")
             return jsonify({"Exception while creating dataset data in local: ": str(exc)}), 400
 
-        # Enviar el dataset a Fakenodo
+        # Enviar el dataset a Zenodo (anteriormente Fakenodo)
         data = {}
         try:
-            fakenodo_response_json = fakenodo_service.create_new_deposition(dataset)
-            response_data = json.dumps(fakenodo_response_json)
+            zenodo_response_json = zenodo_service.create_new_deposition(dataset)  # Cambiado de Fakenodo a Zenodo
+            response_data = json.dumps(zenodo_response_json)
             data = json.loads(response_data)
         except Exception as exc:
             data = {}
-            fakenodo_response_json = {}
-            logger.exception(f"Exception while creating dataset data in Fakenodo {exc}")
+            zenodo_response_json = {}
+            logger.exception(f"Exception while creating dataset data in Zenodo {exc}")
 
         if data.get("conceptrecid"):
             deposition_id = data.get("id")
 
-            # Actualizar dataset con el deposition ID en Fakenodo
+            # Actualizar dataset con el deposition ID en Zenodo
             dataset_service.update_dsmetadata(dataset.ds_meta_data_id, deposition_id=deposition_id)
 
             try:
-                # Cargar cada modelo de características en Fakenodo
+                # Cargar cada modelo de características en Zenodo
                 for feature_model in dataset.feature_models:
-                    fakenodo_service.upload_file(dataset, deposition_id, feature_model)
+                    zenodo_service.upload_file(dataset, deposition_id, feature_model)  # Cambiado de Fakenodo a Zenodo
 
-                # Publicar la entrada
-                fakenodo_service.publish_deposition(deposition_id)
+                # Publicar la entrada en Zenodo
+                zenodo_service.publish_deposition(deposition_id)  # Cambiado de Fakenodo a Zenodo
 
                 # Actualizar el DOI
-                deposition_doi = fakenodo_service.get_doi(deposition_id)
+                deposition_doi = zenodo_service.get_doi(deposition_id)  # Cambiado de Fakenodo a Zenodo
                 dataset_service.update_dsmetadata(dataset.ds_meta_data_id, dataset_doi=deposition_doi)
             except Exception as e:
-                msg = f"Unable to upload feature models to Fakenodo and update DOI: {e}"
+                msg = f"Unable to upload feature models to Zenodo and update DOI: {e}"  # Cambiado de Fakenodo a Zenodo
                 return jsonify({"message": msg}), 200
 
         # Borrar carpeta temporal
@@ -308,7 +306,7 @@ def rate_dataset(dataset_id):
             flash(f"Error: {str(e)}", "danger")  # Ahora mostramos el mensaje de error con 'e'
         except Exception as e:
             # Mostrar el error genérico si ocurre otro tipo de excepción
-            flash(f"Hubo un problema al guardar la calificación: {str(e)}", "danger")
+            flash(f"Hubo un problema al guardar la calificación: {str(e)}", "danger")  # Se muestra un error genérico
 
     # Aquí renderizamos la plantilla, asegurándonos de pasar 'form' y 'dataset' a la plantilla
     return render_template("dataset/view_dataset.html", form=form, dataset=dataset)
