@@ -76,97 +76,85 @@ def test_upload_dataset():
         driver.get(f"{host}/login")
         wait_for_page_to_load(driver)
 
-        # Find the username and password field and enter the values
+        # Log in
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "email")))
         email_field = driver.find_element(By.NAME, "email")
         password_field = driver.find_element(By.NAME, "password")
 
         email_field.send_keys("user1@example.com")
         password_field.send_keys("1234")
-
-        # Send the form
         password_field.send_keys(Keys.RETURN)
         wait_for_page_to_load(driver)
 
         # Count initial datasets
         initial_datasets = count_datasets(driver, host)
 
-        # Open the upload dataset
+        # Open the upload dataset page
         driver.get(f"{host}/dataset/upload")
         wait_for_page_to_load(driver)
 
-        # Find basic info and UVL model and fill values
-        title_field = driver.find_element(By.NAME, "title")
-        title_field.send_keys("Title")
-        desc_field = driver.find_element(By.NAME, "desc")
-        desc_field.send_keys("Description")
-        tags_field = driver.find_element(By.NAME, "tags")
-        tags_field.send_keys("tag1,tag2")
+        # Fill in basic dataset information
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "title")))
+        driver.find_element(By.NAME, "title").send_keys("Title")
+        driver.find_element(By.NAME, "desc").send_keys("Description")
+        driver.find_element(By.NAME, "tags").send_keys("tag1,tag2")
 
-        # Add two authors and fill
-        add_author_button = driver.find_element(By.ID, "add_author")
-        add_author_button.send_keys(Keys.RETURN)
-        wait_for_page_to_load(driver)
-        add_author_button.send_keys(Keys.RETURN)
-        wait_for_page_to_load(driver)
+        # Add authors
+        for i in range(2):
+            add_author_button = driver.find_element(By.ID, "add_author")
+            add_author_button.click()
+            WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.NAME, f"authors-{i}-name"))
+            )
+            driver.find_element(By.NAME, f"authors-{i}-name").send_keys(f"Author{i}")
+            driver.find_element(By.NAME, f"authors-{i}-affiliation").send_keys(f"Club{i}")
+            if i == 0:  # Only add ORCID for the first author
+                driver.find_element(By.NAME, f"authors-{i}-orcid").send_keys("0000-0000-0000-0000")
 
-        name_field0 = driver.find_element(By.NAME, "authors-0-name")
-        name_field0.send_keys("Author0")
-        affiliation_field0 = driver.find_element(By.NAME, "authors-0-affiliation")
-        affiliation_field0.send_keys("Club0")
-        orcid_field0 = driver.find_element(By.NAME, "authors-0-orcid")
-        orcid_field0.send_keys("0000-0000-0000-0000")
-
-        name_field1 = driver.find_element(By.NAME, "authors-1-name")
-        name_field1.send_keys("Author1")
-        affiliation_field1 = driver.find_element(By.NAME, "authors-1-affiliation")
-        affiliation_field1.send_keys("Club1")
-
-        # Obtén las rutas absolutas de los archivos
-        file1_path = os.path.abspath("app/modules/dataset/uvl_examples/file1.uvl")
-        file2_path = os.path.abspath("app/modules/dataset/uvl_examples/file2.uvl")
-
-        # Subir el primer archivo
+        # Upload files
+        file_paths = [
+            os.path.abspath("app/modules/dataset/uvl_examples/file1.uvl"),
+            os.path.abspath("app/modules/dataset/uvl_examples/file2.uvl"),
+        ]
         dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
-        dropzone.send_keys(file1_path)
-        wait_for_page_to_load(driver)
+        for file_path in file_paths:
+            dropzone.send_keys(file_path)
+            WebDriverWait(driver, 10).until(
+                EC.text_to_be_present_in_element((By.CLASS_NAME, "dz-success-mark"), "")  # Confirm file upload
+            )
 
-        # Subir el segundo archivo
-        dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
-        dropzone.send_keys(file2_path)
-        wait_for_page_to_load(driver)
-
-        # Add authors in UVL models
+        # Add author to UVL models
         show_button = driver.find_element(By.ID, "0_button")
-        show_button.send_keys(Keys.RETURN)
+        show_button.click()
         add_author_uvl_button = driver.find_element(By.ID, "0_form_authors_button")
-        add_author_uvl_button.send_keys(Keys.RETURN)
-        wait_for_page_to_load(driver)
+        add_author_uvl_button.click()
+        WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.NAME, "feature_models-0-authors-2-name"))
+        )
+        driver.find_element(By.NAME, "feature_models-0-authors-2-name").send_keys("Author3")
+        driver.find_element(By.NAME, "feature_models-0-authors-2-affiliation").send_keys("Club3")
 
-        name_field = driver.find_element(By.NAME, "feature_models-0-authors-2-name")
-        name_field.send_keys("Author3")
-        affiliation_field = driver.find_element(By.NAME, "feature_models-0-authors-2-affiliation")
-        affiliation_field.send_keys("Club3")
-
-        # Check I agree and send form
+        # Agree to terms and upload
         check = driver.find_element(By.ID, "agreeCheckbox")
-        check.send_keys(Keys.SPACE)
-        wait_for_page_to_load(driver)
-
+        check.click()
         upload_btn = driver.find_element(By.ID, "upload_button")
-        upload_btn.send_keys(Keys.RETURN)
-        wait_for_page_to_load(driver)
-        time.sleep(2)  # Force wait time
+        upload_btn.click()
 
-        assert driver.current_url == f"{host}/dataset/list", "Test failed!"
+        # Wait for redirection
+        WebDriverWait(driver, 10).until(EC.url_to_be(f"{host}/dataset/list"))
 
-        # Count final datasets
+        # Verify the dataset was uploaded
         final_datasets = count_datasets(driver, host)
-        assert final_datasets == initial_datasets + 1, "Test failed!"
+        assert final_datasets == initial_datasets + 1, "Dataset count mismatch! Upload failed."
 
         print("Test passed!")
 
+    except Exception as e:
+        print(f"Test failed: {e}")
+        raise
+
     finally:
-        # Close the browser
+        # Always close the driver
         close_driver(driver)
 
 
