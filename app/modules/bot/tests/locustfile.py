@@ -22,11 +22,9 @@ def logged_in(func):
 
         csrf_token = get_csrf_token(response)
 
-        response = self.client.post("/login", data={
-            "email": "user1@example.com",
-            "password": "1234",
-            "csrf_token": csrf_token
-        })
+        response = self.client.post(
+            "/login", data={"email": "user1@example.com", "password": "1234", "csrf_token": csrf_token}
+        )
         if response.status_code != 200:
             print(f"Login failed: {response.status_code}")
 
@@ -86,8 +84,9 @@ class BotBehavior(TaskSet):
             'is_tested': 'false',
             'submit': 'true',
         }
-        with self.client.post("/bots/create", data=data, headers={"X-CSRF-TOKEN": token},
-                              catch_response=True) as response:
+        with self.client.post(
+                "/bots/create", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+        ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
 
@@ -104,8 +103,9 @@ class BotBehavior(TaskSet):
             'is_tested': 'true',
             'submit': 'true',
         }
-        with self.client.post("/bots/create", data=data, headers={"X-CSRF-TOKEN": token},
-                              catch_response=True) as response:
+        with self.client.post(
+                "/bots/create", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+        ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
             if "✔" not in response.text:
@@ -136,8 +136,9 @@ class BotBehavior(TaskSet):
             'is_tested': 'false',
             'submit': 'true',
         }
-        with self.client.post("/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token},
-                              catch_response=True) as response:
+        with self.client.post(
+                "/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+        ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
 
@@ -149,8 +150,9 @@ class BotBehavior(TaskSet):
             'is_tested': 'true',
             'submit': 'true',
         }
-        with self.client.post("/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token},
-                              catch_response=True) as response:
+        with self.client.post(
+                "/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+        ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
             if "✔" not in response.text:

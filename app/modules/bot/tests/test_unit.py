@@ -531,7 +531,8 @@ class TestBotEdit:
         bot = fk.random_element(users_with_bots[0][3])
         response = logged_in_client.post(
             f"/bots/edit/{bot.id}",
-            data=bot_kwargs | {
+            data=bot_kwargs
+                 | {
                 'is_tested': 'true',
                 'test': 'false',
                 'submit': 'true',
