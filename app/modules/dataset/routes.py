@@ -47,12 +47,12 @@ zenodo_service = ZenodoService()  # Cambiado de FakenodoService a ZenodoService
 doi_mapping_service = DOIMappingService()
 ds_view_record_service = DSViewRecordService()
 
+
 @dataset_bp.route("/dataset/upload", methods=["GET", "POST"])
 @login_required
 def create_dataset():
     form = DataSetForm()
     if request.method == "POST":
-
         dataset = None
 
         if not form.validate_on_submit():
@@ -60,55 +60,51 @@ def create_dataset():
 
         try:
             logger.info("Creating dataset...")
-            # Crear el dataset
             dataset = dataset_service.create_from_form(form=form, current_user=current_user)
             logger.info(f"Created dataset: {dataset}")
-
-            # Mover los feature models
             dataset_service.move_feature_models(dataset)
-
         except Exception as exc:
-            logger.exception(f"Exception while creating dataset data in local {exc}")
-            return jsonify({"Exception while creating dataset data in local: ": str(exc)}), 400
+            logger.exception(f"Exception while create dataset data in local {exc}")
+            return jsonify({"Exception while create dataset data in local: ": str(exc)}), 400
 
-        # Enviar el dataset a Zenodo (anteriormente Fakenodo)
+        # send dataset as deposition to Zenodo
         data = {}
         try:
-            zenodo_response_json = zenodo_service.create_new_deposition(dataset)  # Cambiado de Fakenodo a Zenodo
+            zenodo_response_json = zenodo_service.create_new_deposition(dataset)
             response_data = json.dumps(zenodo_response_json)
             data = json.loads(response_data)
         except Exception as exc:
             data = {}
             zenodo_response_json = {}
-            logger.exception(f"Exception while creating dataset data in Zenodo {exc}")
+            logger.exception(f"Exception while create dataset data in Zenodo {exc}")
 
         if data.get("conceptrecid"):
             deposition_id = data.get("id")
 
-            # Actualizar dataset con el deposition ID en Zenodo
+            # update dataset with deposition id in Zenodo
             dataset_service.update_dsmetadata(dataset.ds_meta_data_id, deposition_id=deposition_id)
 
             try:
-                # Cargar cada modelo de características en Zenodo
+                # iterate for each feature model (one feature model = one request to Zenodo)
                 for feature_model in dataset.feature_models:
-                    zenodo_service.upload_file(dataset, deposition_id, feature_model)  # Cambiado de Fakenodo a Zenodo
+                    zenodo_service.upload_file(dataset, deposition_id, feature_model)
 
-                # Publicar la entrada en Zenodo
-                zenodo_service.publish_deposition(deposition_id)  # Cambiado de Fakenodo a Zenodo
+                # publish deposition
+                zenodo_service.publish_deposition(deposition_id)
 
-                # Actualizar el DOI
-                deposition_doi = zenodo_service.get_doi(deposition_id)  # Cambiado de Fakenodo a Zenodo
+                # update DOI
+                deposition_doi = zenodo_service.get_doi(deposition_id)
                 dataset_service.update_dsmetadata(dataset.ds_meta_data_id, dataset_doi=deposition_doi)
             except Exception as e:
-                msg = f"Unable to upload feature models to Zenodo and update DOI: {e}"  # Cambiado de Fakenodo a Zenodo
+                msg = f"it has not been possible upload feature models in Zenodo and update the DOI: {e}"
                 return jsonify({"message": msg}), 200
 
-        # Borrar carpeta temporal
+        # Delete temp folder
         file_path = current_user.temp_folder()
         if os.path.exists(file_path) and os.path.isdir(file_path):
             shutil.rmtree(file_path)
 
-        msg = "Dataset created successfully!"
+        msg = "Everything works!"
         return jsonify({"message": msg}), 200
 
     return render_template("dataset/upload_dataset.html", form=form)
@@ -182,42 +178,47 @@ def delete():
 
 @dataset_bp.route("/dataset/download/<int:dataset_id>", methods=["GET"])
 def download_dataset(dataset_id):
-    dataset = dataset_service.get_or_404(dataset_id)  # Obtiene el dataset
-    form = RatingForm()  # Inicializa el formulario para la calificación
+    dataset = dataset_service.get_or_404(dataset_id)
 
     file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/"
+
     temp_dir = tempfile.mkdtemp()
     zip_path = os.path.join(temp_dir, f"dataset_{dataset_id}.zip")
 
-    # Crear el archivo ZIP con los datos del dataset
     with ZipFile(zip_path, "w") as zipf:
         for subdir, dirs, files in os.walk(file_path):
             for file in files:
                 full_path = os.path.join(subdir, file)
+
                 relative_path = os.path.relpath(full_path, file_path)
+
                 zipf.write(
                     full_path,
                     arcname=os.path.join(os.path.basename(zip_path[:-4]), relative_path),
                 )
 
-    # Lógica para manejar las cookies y registros de descarga
     user_cookie = request.cookies.get("download_cookie")
     if not user_cookie:
-
-        user_cookie = str(uuid.uuid4())
-
         user_cookie = str(uuid.uuid4())  # Generate a new unique identifier if it does not exist
-
+        # Save the cookie to the user's browser
         resp = make_response(
-            send_from_directory(temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip")
+            send_from_directory(
+                temp_dir,
+                f"dataset_{dataset_id}.zip",
+                as_attachment=True,
+                mimetype="application/zip",
+            )
         )
         resp.set_cookie("download_cookie", user_cookie)
     else:
         resp = send_from_directory(
-            temp_dir, f"dataset_{dataset_id}.zip", as_attachment=True, mimetype="application/zip"
+            temp_dir,
+            f"dataset_{dataset_id}.zip",
+            as_attachment=True,
+            mimetype="application/zip",
         )
 
-    # Comprobar si ya existe un registro de descarga para este usuario y dataset
+    # Check if the download record already exists for this cookie
     existing_record = DSDownloadRecord.query.filter_by(
         user_id=current_user.id if current_user.is_authenticated else None,
         dataset_id=dataset_id,
@@ -225,7 +226,7 @@ def download_dataset(dataset_id):
     ).first()
 
     if not existing_record:
-        # Si no existe, crear un nuevo registro de descarga
+        # Record the download in your database
         DSDownloadRecordService().create(
             user_id=current_user.id if current_user.is_authenticated else None,
             dataset_id=dataset_id,
@@ -233,8 +234,7 @@ def download_dataset(dataset_id):
             download_cookie=user_cookie,
         )
 
-    # Redirigir a la vista del dataset con el formulario de calificación
-    return render_template("view_dataset.html", form=form, dataset=dataset)
+    return resp
 
 
 @dataset_bp.route("/dataset/download/all", methods=["GET"])

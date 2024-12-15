@@ -1,4 +1,5 @@
 import os
+import time
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -65,7 +66,7 @@ def test_download_all_datasets():
 test_download_all_datasets()
 
 
-def test_upload_dataset_with_file_handling():
+def test_upload_dataset():
     driver = initialize_driver()
 
     try:
@@ -75,37 +76,92 @@ def test_upload_dataset_with_file_handling():
         driver.get(f"{host}/login")
         wait_for_page_to_load(driver)
 
-        # Log in as a test user
+        # Find the username and password field and enter the values
         email_field = driver.find_element(By.NAME, "email")
         password_field = driver.find_element(By.NAME, "password")
 
         email_field.send_keys("user1@example.com")
         password_field.send_keys("1234")
+
+        # Send the form
         password_field.send_keys(Keys.RETURN)
         wait_for_page_to_load(driver)
 
-        # Navigate to the upload dataset page
+        # Count initial datasets
+        initial_datasets = count_datasets(driver, host)
+
+        # Open the upload dataset
         driver.get(f"{host}/dataset/upload")
         wait_for_page_to_load(driver)
 
-        # Upload a valid UVL file
-        valid_file_path = os.path.abspath("app/modules/dataset/uvl_examples/valid_file.uvl")
-        upload_file(driver, valid_file_path)
-        validate_upload_success(driver, "valid_file.uvl")
+        # Find basic info and UVL model and fill values
+        title_field = driver.find_element(By.NAME, "title")
+        title_field.send_keys("Title")
+        desc_field = driver.find_element(By.NAME, "desc")
+        desc_field.send_keys("Description")
+        tags_field = driver.find_element(By.NAME, "tags")
+        tags_field.send_keys("tag1,tag2")
 
-        # Upload a duplicate file to test name conflict resolution
-        upload_file(driver, valid_file_path)
-        validate_upload_success(driver, "valid_file (1).uvl")
+        # Add two authors and fill
+        add_author_button = driver.find_element(By.ID, "add_author")
+        add_author_button.send_keys(Keys.RETURN)
+        wait_for_page_to_load(driver)
+        add_author_button.send_keys(Keys.RETURN)
+        wait_for_page_to_load(driver)
 
-        # Attempt to upload an invalid file type
-        invalid_file_path = os.path.abspath("app/modules/dataset/uvl_examples/invalid_file.txt")
-        upload_file(driver, invalid_file_path, expect_error=True)
+        name_field0 = driver.find_element(By.NAME, "authors-0-name")
+        name_field0.send_keys("Author0")
+        affiliation_field0 = driver.find_element(By.NAME, "authors-0-affiliation")
+        affiliation_field0.send_keys("Club0")
+        orcid_field0 = driver.find_element(By.NAME, "authors-0-orcid")
+        orcid_field0.send_keys("0000-0000-0000-0000")
 
-        # Ensure the error message is displayed
-        error_message = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "error-message"))
-        )
-        assert error_message.text == "No valid file", "Unexpected error message for invalid file upload!"
+        name_field1 = driver.find_element(By.NAME, "authors-1-name")
+        name_field1.send_keys("Author1")
+        affiliation_field1 = driver.find_element(By.NAME, "authors-1-affiliation")
+        affiliation_field1.send_keys("Club1")
+
+        # Obtén las rutas absolutas de los archivos
+        file1_path = os.path.abspath("app/modules/dataset/uvl_examples/file1.uvl")
+        file2_path = os.path.abspath("app/modules/dataset/uvl_examples/file2.uvl")
+
+        # Subir el primer archivo
+        dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
+        dropzone.send_keys(file1_path)
+        wait_for_page_to_load(driver)
+
+        # Subir el segundo archivo
+        dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
+        dropzone.send_keys(file2_path)
+        wait_for_page_to_load(driver)
+
+        # Add authors in UVL models
+        show_button = driver.find_element(By.ID, "0_button")
+        show_button.send_keys(Keys.RETURN)
+        add_author_uvl_button = driver.find_element(By.ID, "0_form_authors_button")
+        add_author_uvl_button.send_keys(Keys.RETURN)
+        wait_for_page_to_load(driver)
+
+        name_field = driver.find_element(By.NAME, "feature_models-0-authors-2-name")
+        name_field.send_keys("Author3")
+        affiliation_field = driver.find_element(By.NAME, "feature_models-0-authors-2-affiliation")
+        affiliation_field.send_keys("Club3")
+
+        # Check I agree and send form
+        check = driver.find_element(By.ID, "agreeCheckbox")
+        check.send_keys(Keys.SPACE)
+        wait_for_page_to_load(driver)
+
+        upload_btn = driver.find_element(By.ID, "upload_button")
+        upload_btn.send_keys(Keys.RETURN)
+        wait_for_page_to_load(driver)
+        time.sleep(2)  # Force wait time
+
+        assert driver.current_url == f"{host}/dataset/list", "Test failed!"
+
+        # Count final datasets
+        final_datasets = count_datasets(driver, host)
+        assert final_datasets == initial_datasets + 1, "Test failed!"
 
         print("Test passed!")
 
@@ -114,37 +170,8 @@ def test_upload_dataset_with_file_handling():
         close_driver(driver)
 
 
-# Utility functions
-def upload_file(driver, file_path, expect_error=False):
-    """Handles file upload and waits for the result."""
-    dropzone = driver.find_element(By.CLASS_NAME, "dz-hidden-input")
-    dropzone.send_keys(file_path)
-
-    # Wait for the upload response
-    if not expect_error:
-        WebDriverWait(driver, 10).until(
-            EC.text_to_be_present_in_element(
-                (By.CLASS_NAME, "upload-message"), "UVL uploaded and validated successfully"
-            )
-        )
-    else:
-        WebDriverWait(driver, 10).until(
-            EC.text_to_be_present_in_element(
-                (By.CLASS_NAME, "error-message"), "No valid file"
-            )
-        )
-
-
-def validate_upload_success(driver, expected_filename):
-    """Validates that the uploaded file name matches the expected value."""
-    success_message = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "upload-message"))
-    )
-    assert expected_filename in success_message.text, f"Filename {expected_filename} not found in success message!"
-
-
 # Call the test function
-test_upload_dataset_with_file_handling()
+test_upload_dataset()
 
 
 def test_rate_dataset():
