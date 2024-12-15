@@ -16,7 +16,7 @@ def test_bot_list():
             # Set window to correct size
             driver.set_window_size(992, 1108)
             # Open home page
-            driver.get("http://localhost/")
+            driver.get(host)
             # Go to login page
             driver.find_element(By.LINK_TEXT, "Login").click()
             # Click on email text field
@@ -67,7 +67,7 @@ def test_bot_create_and_delete():
             # Set window to correct size
             driver.set_window_size(992, 1108)
             # Open home page
-            driver.get("http://localhost/")
+            driver.get(host)
             # Go to login page
             driver.find_element(By.LINK_TEXT, "Login").click()
             # Click on email text field
@@ -148,7 +148,7 @@ def test_bot_edit():
             # Set window to correct size
             driver.set_window_size(992, 1108)
             # Open home page
-            driver.get("http://localhost/")
+            driver.get(host)
             # Go to login page
             driver.find_element(By.LINK_TEXT, "Login").click()
             # Click on email text field
