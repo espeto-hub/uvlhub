@@ -117,8 +117,8 @@ class AppriseExtension:
                                         if not re.match(token_details['regex'][0], value):
                                             template_matches[template]['errors'].append(
                                                 f'Invalid string for {token_details["name"]}, must match regular expression {token_details["regex"][0]}, got {value}')
-                                    except:
-                                        pass
+                                    except Exception as _:
+                                        continue
                             case 'list:int':
                                 continue
                             case 'list:float':
@@ -303,9 +303,9 @@ class AppriseExtension:
         html += '<h2>Tokens</h2>'
         html += '<table class="table">'
         html += '<tr><th>Token</th><th>Required</th><th>Type</th><th>Constraints</th></tr>'
-        for token, details in sorted(service_details['tokens'].items(),
+        for token_name, details in sorted(service_details['tokens'].items(),
                                      key=lambda x: (not x[1]['required'], x[1]['name'])):
-            if token == 'schema':
+            if token_name == 'schema':
                 continue
             html += f'<tr><td>{details["name"]}</td>'
             html += f'<td>{"Yes" if details["required"] else "No"}</td>'
