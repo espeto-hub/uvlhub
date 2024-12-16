@@ -266,7 +266,7 @@ class RatingService:
 
     def save_rating(self, dataset_id: int, user_id: int, score: int):
         """Guarda una nueva calificación o actualiza una existente."""
-        
+
         # Verificar si el dataset y el usuario existen
         dataset = self.db.query(DataSet).filter_by(id=dataset_id).first()
         if not dataset:
@@ -290,7 +290,7 @@ class RatingService:
 
     def get_average_rating(self, dataset_id: int) -> float:
         """Obtiene el promedio de las calificaciones de un dataset."""
-        
+
         ratings = self.db.query(Rating.score).filter_by(dataset_id=dataset_id).all()
         if not ratings:
             return 0.0  # Si no hay calificaciones, devolver 0

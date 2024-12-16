@@ -85,7 +85,7 @@ class BotBehavior(TaskSet):
             'submit': 'true',
         }
         with self.client.post(
-                "/bots/create", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+            "/bots/create", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
         ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
@@ -104,7 +104,7 @@ class BotBehavior(TaskSet):
             'submit': 'true',
         }
         with self.client.post(
-                "/bots/create", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+            "/bots/create", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
         ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
@@ -137,7 +137,7 @@ class BotBehavior(TaskSet):
             'submit': 'true',
         }
         with self.client.post(
-                "/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+            "/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
         ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")
@@ -151,7 +151,7 @@ class BotBehavior(TaskSet):
             'submit': 'true',
         }
         with self.client.post(
-                "/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
+            "/bots/edit/1", data=data, headers={"X-CSRF-TOKEN": token}, catch_response=True
         ) as response:
             if response.status_code != 200:
                 response.failure(f"Unexpected response: {response.status_code}")

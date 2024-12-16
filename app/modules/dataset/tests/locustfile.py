@@ -19,11 +19,6 @@ class DatasetBehavior(TaskSet):
         response = self.client.get("/dataset/upload")
         get_csrf_token(response)
 
-    # Test de carga para Download all datasets
-    @task
-    def download_all_datasets(self):
-        self.client.get("/dataset/download/all")
-
     @task(2)
     def dataset_rate(self):
         for i in range(4):

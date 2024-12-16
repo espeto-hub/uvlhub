@@ -36,7 +36,7 @@ from app.modules.dataset.services import (
     DSViewRecordService,
     DataSetService,
     DOIMappingService,
-    RatingService
+    RatingService,
 )
 from app.modules.zenodo.services import ZenodoService
 
@@ -282,7 +282,6 @@ def subdomain_index(doi):
     return resp
 
 
-
 @dataset_bp.route("/dataset/unsynchronized/<int:dataset_id>/", methods=["GET"])
 @login_required
 def get_unsynchronized_dataset(dataset_id):
@@ -294,6 +293,7 @@ def get_unsynchronized_dataset(dataset_id):
         abort(404)
 
     return render_template("dataset/view_dataset.html", dataset=dataset)
+
 
 @dataset_bp.route("/dataset/<int:dataset_id>/rate", methods=["GET", "POST"])
 @login_required

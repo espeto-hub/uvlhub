@@ -4,8 +4,7 @@ from flask import Flask
 from datetime import datetime
 from app.modules.dataset.routes import dataset_bp
 from app.modules.dataset.services import RatingService
-from app.modules.dataset.models import Rating, DataSet
-from sqlalchemy.exc import IntegrityError
+from app.modules.dataset.models import Rating
 
 
 @pytest.fixture
@@ -37,21 +36,20 @@ def test_download_all_dataset(mock_send_file, mock_zip_all_datasets, client):
     current_date = datetime.now().strftime("%Y_%m_%d")
     zip_filename = f"uvlhub_bulk_{current_date}.zip"
     mock_send_file.assert_called_once_with('/path/to/all_datasets.zip', as_attachment=True, download_name=zip_filename)
-    mock_send_file.assert_called_once_with(
-        '/path/to/all_datasets.zip',
-        as_attachment=True,
-        download_name=zip_filename
-    )
+    mock_send_file.assert_called_once_with('/path/to/all_datasets.zip', as_attachment=True, download_name=zip_filename)
+
 
 @pytest.fixture
 def mock_db_session():
     """Fixture para proporcionar una sesión de base de datos simulada."""
     return MagicMock()
 
+
 @pytest.fixture
 def rating_service(mock_db_session):
     """Fixture para inicializar el servicio de rating."""
     return RatingService(db_session=mock_db_session)
+
 
 @patch('flask.flash')  # Mock para flash
 def test_save_rating_creates_new(mock_flash, rating_service, mock_db_session):
@@ -66,6 +64,7 @@ def test_save_rating_creates_new(mock_flash, rating_service, mock_db_session):
     # Verificar que la calificación fue actualizada
     assert no_rating.score == 5
     mock_db_session.commit.assert_called_once()
+
 
 def test_save_rating_updates_existing(client, rating_service, mock_db_session):
     """Probar que se actualiza una calificación existente."""
