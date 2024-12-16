@@ -2,6 +2,7 @@ afmparser==1.0.3
 alembic==1.13.2
 aniso8601==9.0.1
 antlr4-python3-runtime==4.13.1
+apprise==1.9.0
 astutils==0.0.6
 attrs==23.2.0
 beautifulsoup4==4.12.3
@@ -10,7 +11,7 @@ Brotli==1.1.0
 bs4==0.0.2
 certifi==2024.7.4
 cffi==1.16.0
-charset-normalizer==3.3.2
+charset-normalizer==3.4.0
 click==8.1.7
 ConfigArgParse==1.7
 coverage==7.6.0
@@ -19,6 +20,7 @@ dd==0.6.0
 dnspython==2.6.1
 docker==7.1.0
 email_validator==2.2.0
+exrex==0.12.0
 Faker==26.0.0
 flake8==7.1.0
 flamapy==2.0.0.dev1
@@ -59,7 +61,7 @@ pathlib==1.0.1
 pluggy==1.5.0
 ply==3.10
 psutil==6.0.0
-pyasn1==0.6.0
+pyasn1==0.6.1
 pycodestyle==2.12.1
 pycparser==2.22
 pyflakes==3.2.0
@@ -100,4 +102,4 @@ zope.event==5.0
 zope.interface==6.4.post2
 zstandard==0.22.0
 black==24.3.0
-pre-commit==3.0.1
+pre-commit==4.0.1
