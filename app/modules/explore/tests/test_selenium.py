@@ -16,7 +16,7 @@ def test_by_author():
         dropdown = driver.find_element(By.ID, "authors")
         driver.execute_script("arguments[0].value = 'Author 1';", dropdown)
 
-        time.sleep(2)
+        time.sleep(4)
         # Simular un clic en "View dataset" usando JavaScript
         view_dataset_link = driver.find_element(By.LINK_TEXT, "View dataset")
         driver.execute_script("arguments[0].click();", view_dataset_link)
