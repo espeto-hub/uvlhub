@@ -11,7 +11,7 @@ from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
 revision = 'dc5d8575a85e'
-down_revision = '001'
+down_revision = '3f3a8104c92c'
 branch_labels = None
 depends_on = None
 
