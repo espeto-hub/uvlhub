@@ -9,7 +9,6 @@ import psutil
 @click.command('locust', help="Launches Locust for load testing based on the environment.")
 @click.argument('module', required=False)
 def locust(module):
-
     # Absolute paths
     working_dir = os.getenv('WORKING_DIR', '')
     core_dir = os.path.join(working_dir, 'core')
@@ -25,8 +24,7 @@ def locust(module):
             locustfile_path = os.path.join(module_path, 'tests', 'locustfile.py')
             if not os.path.exists(locustfile_path):
                 raise click.UsageError(
-                    f"Locustfile for module '{module}' does not exist at path "
-                    f"'{locustfile_path}'."
+                    f"Locustfile for module '{module}' does not exist at path " f"'{locustfile_path}'."
                 )
 
     def run_docker_locust(volume_name, module):
@@ -44,8 +42,13 @@ def locust(module):
 
         # Build Locust's image
         build_command = [
-            'docker', 'build', '-f', os.path.join(docker_dir, 'images/Dockerfile.locust'),
-            '-t', 'locust-image', '.'
+            'docker',
+            'build',
+            '-f',
+            os.path.join(docker_dir, 'images/Dockerfile.locust'),
+            '-t',
+            'locust-image',
+            '.',
         ]
         click.echo(f"Build command: {' '.join(build_command)}")
         subprocess.run(build_command, check=True)
@@ -57,9 +60,20 @@ def locust(module):
 
         # Run the Locust container
         up_command = [
-            'docker', 'run', '-d', '-p', '8089:8089', '-v', f"{volume_name}:/app",
-            '--name', 'locust_container', '--network', 'docker_uvlhub_network',
-            'locust-image', '-f', locustfile_path
+            'docker',
+            'run',
+            '-d',
+            '-p',
+            '8089:8089',
+            '-v',
+            f"{volume_name}:/app",
+            '--name',
+            'locust_container',
+            '--network',
+            'docker_uvlhub_network',
+            'locust-image',
+            '-f',
+            locustfile_path,
         ]
 
         click.echo(f"Docker Run command: {' '.join(up_command)}")
@@ -74,7 +88,6 @@ def locust(module):
         return False
 
     def run_in_console(module):
-
         if is_locust_running():
             click.echo("Locust is already running.")
             return
@@ -107,8 +120,12 @@ def locust(module):
         try:
             web_container = client.containers.get('web_app_container')
             volume_name = next(
-                (mount.get('Name') or mount.get('Source') for mount in web_container.attrs['Mounts']
-                 if mount['Destination'] == '/app'), None
+                (
+                    mount.get('Name') or mount.get('Source')
+                    for mount in web_container.attrs['Mounts']
+                    if mount['Destination'] == '/app'
+                ),
+                None,
             )
 
             if not volume_name:

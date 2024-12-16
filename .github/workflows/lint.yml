@@ -1,10 +1,8 @@
 name: Python Lint
 
 on:
-  push:
-    branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -25,4 +23,4 @@ jobs:
 
     - name: Lint with flake8
       run: |
-        flake8 app
+        flake8 app core rosemary

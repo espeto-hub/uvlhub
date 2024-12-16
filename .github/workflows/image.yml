@@ -1,0 +1,44 @@
+name: Create and publish a Docker image
+
+on:
+   workflow_dispatch:
+   workflow_run:
+    workflows: [Create release on merge PR]
+    types:
+      - completed
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Gets latest tag
+        id: get-latest-tag
+        uses: actions-ecosystem/action-get-latest-tag@b7c32daec3395a9616f88548363a42652b22d435
+
+      - name: Log in to GHCR
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build --build-arg VERSION_TAG=${{ steps.get-latest-tag.outputs.tag }} -t ghcr.io/espeto-hub/uvlhub:${{ steps.get-latest-tag.outputs.tag }} -f docker/images/Dockerfile.prod .
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
+
+      - name: Push Docker image to Github Container Registry
+        run: docker push ghcr.io/espeto-hub/uvlhub:${{ steps.get-latest-tag.outputs.tag }}
+
+      - name: Tag and push latest to Github Container Registry
+        run: |
+          docker tag ghcr.io/espeto-hub/uvlhub:${{ steps.get-latest-tag.outputs.tag }} ghcr.io/espeto-hub/uvlhub:latest
+          docker push ghcr.io/espeto-hub/uvlhub:latest
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled

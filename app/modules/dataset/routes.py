@@ -1,6 +1,6 @@
+import json
 import logging
 import os
-import json
 import shutil
 import tempfile
 import uuid
@@ -11,6 +11,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     jsonify,
     send_from_directory,
     make_response,
@@ -19,18 +20,18 @@ from flask import (
 )
 from flask_login import login_required, current_user
 
-from app.modules.dataset.forms import DataSetForm
-from app.modules.dataset.models import (
-    DSDownloadRecord
-)
+from app.modules.auth.services import AuthenticationService
+from app.modules.bot.services import BotMessagingService
 from app.modules.dataset import dataset_bp
+from app.modules.dataset.forms import DataSetForm
+from app.modules.dataset.models import DSDownloadRecord
 from app.modules.dataset.services import (
     AuthorService,
     DSDownloadRecordService,
     DSMetaDataService,
     DSViewRecordService,
     DataSetService,
-    DOIMappingService
+    DOIMappingService,
 )
 from app.modules.zenodo.services import ZenodoService
 
@@ -137,9 +138,7 @@ def upload():
         # Generate unique filename (by recursion)
         base_name, extension = os.path.splitext(file.filename)
         i = 1
-        while os.path.exists(
-            os.path.join(temp_folder, f"{base_name} ({i}){extension}")
-        ):
+        while os.path.exists(os.path.join(temp_folder, f"{base_name} ({i}){extension}")):
             i += 1
         new_filename = f"{base_name} ({i}){extension}"
         file_path = os.path.join(temp_folder, new_filename)
@@ -178,6 +177,9 @@ def delete():
 
 @dataset_bp.route("/dataset/download/<int:dataset_id>", methods=["GET"])
 def download_dataset(dataset_id):
+    auth_service = AuthenticationService()
+    profile = auth_service.get_authenticated_user_profile()
+
     dataset = dataset_service.get_or_404(dataset_id)
 
     file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/"
@@ -194,16 +196,12 @@ def download_dataset(dataset_id):
 
                 zipf.write(
                     full_path,
-                    arcname=os.path.join(
-                        os.path.basename(zip_path[:-4]), relative_path
-                    ),
+                    arcname=os.path.join(os.path.basename(zip_path[:-4]), relative_path),
                 )
 
     user_cookie = request.cookies.get("download_cookie")
     if not user_cookie:
-        user_cookie = str(
-            uuid.uuid4()
-        )  # Generate a new unique identifier if it does not exist
+        user_cookie = str(uuid.uuid4())  # Generate a new unique identifier if it does not exist
         # Save the cookie to the user's browser
         resp = make_response(
             send_from_directory(
@@ -226,7 +224,7 @@ def download_dataset(dataset_id):
     existing_record = DSDownloadRecord.query.filter_by(
         user_id=current_user.id if current_user.is_authenticated else None,
         dataset_id=dataset_id,
-        download_cookie=user_cookie
+        download_cookie=user_cookie,
     ).first()
 
     if not existing_record:
@@ -238,7 +236,19 @@ def download_dataset(dataset_id):
             download_cookie=user_cookie,
         )
 
+    BotMessagingService().on_download_dataset(dataset, profile)
+
     return resp
+
+
+@dataset_bp.route("/dataset/download/all", methods=["GET"])
+def download_all_dataset():
+    zip_path = dataset_service.zip_all_datasets()
+    # Obtener la fecha actual en el formato deseado (por ejemplo, YYYYMMDD)
+    current_date = datetime.now().strftime("%Y_%m_%d")
+    # Crear el nombre del archivo con la fecha
+    zip_filename = f"uvlhub_bulk_{current_date}.zip"
+    return send_file(zip_path, as_attachment=True, download_name=zip_filename)
 
 
 @dataset_bp.route("/doi/<path:doi>/", methods=["GET"])

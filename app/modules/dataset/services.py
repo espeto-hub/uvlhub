@@ -2,8 +2,10 @@ import logging
 import os
 import hashlib
 import shutil
+import tempfile
 from typing import Optional
 import uuid
+from zipfile import ZipFile
 
 from flask import request, flash
 
@@ -16,13 +18,13 @@ from app.modules.dataset.repositories import (
     DSDownloadRecordRepository,
     DSMetaDataRepository,
     DSViewRecordRepository,
-    DataSetRepository
+    DataSetRepository,
 )
 from app.modules.featuremodel.repositories import FMMetaDataRepository, FeatureModelRepository
 from app.modules.hubfile.repositories import (
     HubfileDownloadRecordRepository,
     HubfileRepository,
-    HubfileViewRecordRepository
+    HubfileViewRecordRepository,
 )
 from core.services.BaseService import BaseService
 
@@ -62,6 +64,9 @@ class DataSetService(BaseService):
         for feature_model in dataset.feature_models:
             uvl_filename = feature_model.fm_meta_data.uvl_filename
             shutil.move(os.path.join(source_dir, uvl_filename), dest_dir)
+
+    def is_synchronized(self, dataset_id: int) -> bool:
+        return self.repository.is_synchronized(dataset_id)
 
     def get_synchronized(self, current_user_id: int) -> DataSet:
         return self.repository.get_synchronized(current_user_id)
@@ -141,6 +146,48 @@ class DataSetService(BaseService):
         domain = os.getenv('DOMAIN', 'localhost')
         return f'http://{domain}/doi/{dataset.ds_meta_data.dataset_doi}'
 
+    def zip_dataset(self, dataset: DataSet) -> str:
+        working_dir = os.getenv('WORKING_DIR', '')
+        file_path = os.path.join(working_dir, "uploads", f"user_{dataset.user_id}", f"dataset_{dataset.id}")
+        temp_dir = tempfile.mkdtemp()
+        zip_path = os.path.join(temp_dir, f"dataset_{dataset.id}.zip")
+
+        with ZipFile(zip_path, "w") as zipf:
+            for subdir, dirs, files in os.walk(file_path):
+                for file in files:
+                    full_path = os.path.join(subdir, file)
+
+                    relative_path = os.path.relpath(full_path, file_path)
+
+                    zipf.write(
+                        full_path,
+                        arcname=os.path.join(os.path.basename(zip_path[:-4]), relative_path),
+                    )
+
+        return temp_dir
+
+    def zip_all_datasets(self) -> str:
+        temp_dir = tempfile.mkdtemp()
+        zip_path = os.path.join(temp_dir, "all_datasets.zip")
+        with ZipFile(zip_path, "w") as zipf:
+            for user_dir in os.listdir("uploads"):
+                user_path = os.path.join("uploads", user_dir)
+                if os.path.isdir(user_path) and user_dir.startswith("user_"):
+                    for dataset_dir in os.listdir(user_path):
+                        dataset_path = os.path.join(user_path, dataset_dir)
+                        if os.path.isdir(dataset_path) and dataset_dir.startswith("dataset_"):
+                            dataset_id = int(dataset_dir.split("_")[1])
+                            if self.is_synchronized(dataset_id):
+                                for subdir, dirs, files in os.walk(dataset_path):
+                                    for file in files:
+                                        full_path = os.path.join(subdir, file)
+                                        relative_path = os.path.relpath(full_path, dataset_path)
+                                        zipf.write(
+                                            full_path,
+                                            arcname=os.path.join(dataset_dir, relative_path),
+                                        )
+        return zip_path
+
 
 class AuthorService(BaseService):
     def __init__(self):
@@ -170,11 +217,10 @@ class DSViewRecordService(BaseService):
     def the_record_exists(self, dataset: DataSet, user_cookie: str):
         return self.repository.the_record_exists(dataset, user_cookie)
 
-    def create_new_record(self, dataset: DataSet,  user_cookie: str) -> DSViewRecord:
+    def create_new_record(self, dataset: DataSet, user_cookie: str) -> DSViewRecord:
         return self.repository.create_new_record(dataset, user_cookie)
 
     def create_cookie(self, dataset: DataSet) -> str:
-
         user_cookie = request.cookies.get("view_cookie")
         if not user_cookie:
             user_cookie = str(uuid.uuid4())
@@ -199,17 +245,16 @@ class DOIMappingService(BaseService):
             return None
 
 
-class SizeService():
-
+class SizeService:
     def __init__(self):
         pass
 
     def get_human_readable_size(self, size: int) -> str:
         if size < 1024:
             return f'{size} bytes'
-        elif size < 1024 ** 2:
+        elif size < 1024**2:
             return f'{round(size / 1024, 2)} KB'
-        elif size < 1024 ** 3:
+        elif size < 1024**3:
             return f'{round(size / (1024 ** 2), 2)} MB'
         else:
             return f'{round(size / (1024 ** 3), 2)} GB'

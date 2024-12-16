@@ -11,6 +11,7 @@ from core.managers.module_manager import ModuleManager
 from core.managers.config_manager import ConfigManager
 from core.managers.error_handler_manager import ErrorHandlerManager
 from core.managers.logging_manager import LoggingManager
+from core.apprise.apprise import AppriseExtension
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +19,7 @@ load_dotenv()
 # Create the instances
 db = SQLAlchemy()
 migrate = Migrate()
+apprise = AppriseExtension()
 
 
 def create_app(config_name='development'):
@@ -30,6 +32,7 @@ def create_app(config_name='development'):
     # Initialize SQLAlchemy and Migrate with the app
     db.init_app(app)
     migrate.init_app(app, db)
+    apprise.init_app(app)
 
     # Register modules
     module_manager = ModuleManager(app)
@@ -37,6 +40,7 @@ def create_app(config_name='development'):
 
     # Register login manager
     from flask_login import LoginManager
+
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
@@ -44,6 +48,7 @@ def create_app(config_name='development'):
     @login_manager.user_loader
     def load_user(user_id):
         from app.modules.auth.models import User
+
         return User.query.get(int(user_id))
 
     # Set up logging
@@ -61,7 +66,7 @@ def create_app(config_name='development'):
             'FLASK_APP_NAME': os.getenv('FLASK_APP_NAME'),
             'FLASK_ENV': os.getenv('FLASK_ENV'),
             'DOMAIN': os.getenv('DOMAIN', 'localhost'),
-            'APP_VERSION': get_app_version()
+            'APP_VERSION': get_app_version(),
         }
 
     return app

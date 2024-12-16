@@ -1,0 +1,57 @@
+services:
+
+  web:
+    container_name: web_app_container
+    image: ghcr.io/espeto-hub/uvlhub:latest
+    env_file:
+      - ../.env
+    network_mode: service:tailscale
+    depends_on:
+      - db
+      - tailscale
+    restart: always
+    volumes:
+      - ./entrypoints/production_entrypoint.sh:/app/entrypoint.sh
+      - ../scripts:/app/scripts
+      - ../migrations:/app/migrations
+      - ../uploads:/app/uploads
+      - ../.moduleignore:/app/.moduleignore
+    command: [ "sh", "-c", "sh /app/entrypoint.sh" ]
+
+  db:
+    container_name: mariadb_container
+    env_file:
+      - ../.env
+    image: mariadb:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    env_file:
+      - ../.env
+    volumes:
+      - tailscale_data:/var/lib/tailscale
+      - ./tailscale/config.json:/config.json
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
+
+  watchtower:
+    container_name: watchtower_container
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --cleanup --interval 120 web_app_container
+    restart: always
+
+volumes:
+  db_data:
+  tailscale_data:

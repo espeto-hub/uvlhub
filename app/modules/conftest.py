@@ -1,12 +1,24 @@
 import pytest
+from faker import Faker
 
 from app import create_app, db
 from app.modules.auth.models import User
+from core.faker.faker import RegexProvider
+
+# Create a Faker instance
+faker = Faker()
+faker.add_provider(RegexProvider)
+faker.status = 'test'
+
+
+@pytest.fixture(scope='session', name='faker')
+def faker_fixture():
+    return faker
 
 
 @pytest.fixture(scope='session')
 def test_app():
-    """ Create and configure a new app instance for each test session. """
+    """Create and configure a new app instance for each test session."""
     test_app = create_app('testing')
 
     with test_app.app_context():
@@ -17,7 +29,6 @@ def test_app():
 
 @pytest.fixture(scope='module')
 def test_client(test_app):
-
     with test_app.test_client() as testing_client:
         with test_app.app_context():
             print("TESTING SUITE (2): Blueprints registrados:", test_app.blueprints)
@@ -35,6 +46,7 @@ def test_client(test_app):
             print("Rutas registradas:")
             for rule in test_app.url_map.iter_rules():
                 print(rule)
+
             yield testing_client
 
             db.session.remove()
@@ -64,10 +76,7 @@ def login(test_client, email, password):
     Returns:
         response: POST login request response.
     """
-    response = test_client.post('/login', data=dict(
-        email=email,
-        password=password
-    ), follow_redirects=True)
+    response = test_client.post('/login', data=dict(email=email, password=password), follow_redirects=True)
     return response
 
 

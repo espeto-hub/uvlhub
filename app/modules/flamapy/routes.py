@@ -1,4 +1,7 @@
 import logging
+
+from app.modules.auth.services import AuthenticationService
+from app.modules.bot.services import BotMessagingService
 from app.modules.hubfile.services import HubfileService
 from flask import send_file, jsonify
 from app.modules.flamapy import flamapy_bp
@@ -24,15 +27,13 @@ def check_uvl(file_id):
         def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
             if "\\t" in msg:
                 warning_message = (
-                    f"The UVL has the following warning that prevents reading it: "
-                    f"Line {line}:{column} - {msg}"
+                    f"The UVL has the following warning that prevents reading it: " f"Line {line}:{column} - {msg}"
                 )
                 print(warning_message)
                 self.errors.append(warning_message)
             else:
                 error_message = (
-                    f"The UVL has the following error that prevents reading it: "
-                    f"Line {line}:{column} - {msg}"
+                    f"The UVL has the following error that prevents reading it: " f"Line {line}:{column} - {msg}"
                 )
                 self.errors.append(error_message)
 
@@ -79,6 +80,10 @@ def to_glencoe(file_id):
         fm = UVLReader(hubfile.get_path()).transform()
         GlencoeWriter(temp_file.name, fm).transform()
 
+        auth_service = AuthenticationService()
+        profile = auth_service.get_authenticated_user_profile()
+        BotMessagingService().on_download_file(hubfile, profile, format="Glencoe")
+
         # Return the file in the response
         return send_file(temp_file.name, as_attachment=True, download_name=f'{hubfile.name}_glencoe.txt')
     finally:
@@ -93,6 +98,10 @@ def to_splot(file_id):
         hubfile = HubfileService().get_by_id(file_id)
         fm = UVLReader(hubfile.get_path()).transform()
         SPLOTWriter(temp_file.name, fm).transform()
+
+        auth_service = AuthenticationService()
+        profile = auth_service.get_authenticated_user_profile()
+        BotMessagingService().on_download_file(hubfile, profile, format="SPLOT")
 
         # Return the file in the response
         return send_file(temp_file.name, as_attachment=True, download_name=f'{hubfile.name}_splot.txt')
@@ -109,6 +118,10 @@ def to_cnf(file_id):
         fm = UVLReader(hubfile.get_path()).transform()
         sat = FmToPysat(fm).transform()
         DimacsWriter(temp_file.name, sat).transform()
+
+        auth_service = AuthenticationService()
+        profile = auth_service.get_authenticated_user_profile()
+        BotMessagingService().on_download_file(hubfile, profile, format="DIMACS")
 
         # Return the file in the response
         return send_file(temp_file.name, as_attachment=True, download_name=f'{hubfile.name}_cnf.txt')

@@ -1,0 +1,47 @@
+name: Check PR attributes
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]
+    branches:
+      - main
+
+jobs:
+  check_pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check if it has none of the correct tags
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'WI') && !contains(github.event.pull_request.labels.*.name, 'incidencia') }}
+        run: |
+          echo 'The pull request must be labeled as `WI` or as `incidencia`, it is currently labeled with none' >> $GITHUB_STEP_SUMMARY
+          echo "no_type=true" >> "$GITHUB_ENV"
+      - name: Check if it has more than one correct tag
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'WI') && contains(github.event.pull_request.labels.*.name, 'incidencia') }}
+        run: |
+          echo 'The pull request must be labeled as `WI` or as `incidencia`, it is currently labeled with both' >> $GITHUB_STEP_SUMMARY
+          echo "too_type=true" >> "$GITHUB_ENV"
+      - name: Check if it has someone assigned
+        if: toJson(github.event.pull_request.assignees) == '[]'
+        run: |
+          echo 'The pull request must have someone assigned' >> $GITHUB_STEP_SUMMARY
+          echo "no_assignee=true" >> "$GITHUB_ENV"
+      - name: Check if it has milestone assigned
+        if: github.event.pull_request.milestone == null
+        run: |
+          echo 'The pull request must have a milestone' >> $GITHUB_STEP_SUMMARY
+          echo "no_milestone=true" >> "$GITHUB_ENV"
+      - name: Send message
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            ${{ (env.no_type || env.too_type) && '❌' || '✅' }} The PR has a type label assigned (`WI` or `incidencia`)
+            ${{ env.no_assignee && '❌' || '✅' }} The PR has someone asigned
+            ${{ env.no_milestone && '❌' || '✅' }} The PR has a milestone assigned
+          comment-tag: pr_check
+      - name: Error if needed
+        if: env.no_type || env.too_type || env.no_assignee || env.no_milestone
+        run: |
+          exit 1

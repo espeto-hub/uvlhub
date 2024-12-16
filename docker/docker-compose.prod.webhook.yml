@@ -2,7 +2,7 @@ services:
 
   web:
     container_name: web_app_container
-    image: drorganvidez/uvlhub:latest
+    image: ghcr.io/espeto-hub/uvlhub:latest
     env_file:
       - ../.env
     ports:
