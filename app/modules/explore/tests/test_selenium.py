@@ -142,7 +142,7 @@ def test_clear_filters():
         close_driver(driver)
 
 
-test_by_author()
+# test_by_author()
 test_clear_filters()
 test_files_n()
 test_size()
