@@ -7,7 +7,7 @@ from typing import Optional
 import uuid
 from zipfile import ZipFile
 
-from flask import request, flash
+from flask import request
 
 from sqlalchemy.exc import IntegrityError
 from app.modules.auth.services import AuthenticationService
