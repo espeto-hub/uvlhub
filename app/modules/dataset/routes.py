@@ -1,6 +1,6 @@
+import json
 import logging
 import os
-import json
 import shutil
 import tempfile
 import uuid
@@ -20,9 +20,11 @@ from flask import (
 )
 from flask_login import login_required, current_user
 
+from app.modules.auth.services import AuthenticationService
+from app.modules.bot.services import BotMessagingService
+from app.modules.dataset import dataset_bp
 from app.modules.dataset.forms import DataSetForm
 from app.modules.dataset.models import DSDownloadRecord
-from app.modules.dataset import dataset_bp
 from app.modules.dataset.services import (
     AuthorService,
     DSDownloadRecordService,
@@ -49,6 +51,7 @@ ds_view_record_service = DSViewRecordService()
 def create_dataset():
     form = DataSetForm()
     if request.method == "POST":
+
         dataset = None
 
         if not form.validate_on_submit():
@@ -174,6 +177,9 @@ def delete():
 
 @dataset_bp.route("/dataset/download/<int:dataset_id>", methods=["GET"])
 def download_dataset(dataset_id):
+    auth_service = AuthenticationService()
+    profile = auth_service.get_authenticated_user_profile()
+
     dataset = dataset_service.get_or_404(dataset_id)
 
     file_path = f"uploads/user_{dataset.user_id}/dataset_{dataset.id}/"
@@ -230,6 +236,8 @@ def download_dataset(dataset_id):
             download_cookie=user_cookie,
         )
 
+    BotMessagingService().on_download_dataset(dataset, profile)
+
     return resp
 
 
@@ -245,6 +253,7 @@ def download_all_dataset():
 
 @dataset_bp.route("/doi/<path:doi>/", methods=["GET"])
 def subdomain_index(doi):
+
     # Check if the DOI is an old DOI
     new_doi = doi_mapping_service.get_new_doi(doi)
     if new_doi:
@@ -271,6 +280,7 @@ def subdomain_index(doi):
 @dataset_bp.route("/dataset/unsynchronized/<int:dataset_id>/", methods=["GET"])
 @login_required
 def get_unsynchronized_dataset(dataset_id):
+
     # Get dataset
     dataset = dataset_service.get_unsynchronized_dataset(current_user.id, dataset_id)
 

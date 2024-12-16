@@ -3,6 +3,9 @@ import os
 import uuid
 from flask import current_app, jsonify, make_response, request, send_from_directory
 from flask_login import current_user
+
+from app.modules.auth.services import AuthenticationService
+from app.modules.bot.services import BotMessagingService
 from app.modules.hubfile import hubfile_bp
 from app.modules.hubfile.models import HubfileDownloadRecord, HubfileViewRecord
 from app.modules.hubfile.services import HubfileDownloadRecordService, HubfileService
@@ -41,6 +44,10 @@ def download_file(file_id):
     # Save the cookie to the user's browser
     resp = make_response(send_from_directory(directory=file_path, path=filename, as_attachment=True))
     resp.set_cookie("file_download_cookie", user_cookie)
+
+    auth_service = AuthenticationService()
+    profile = auth_service.get_authenticated_user_profile()
+    BotMessagingService().on_download_file(file, profile, format="UVL")
 
     return resp
 

@@ -2,7 +2,7 @@
 __pycache__/
 .idea
 uploads/
-app.log
+app.log*
 .DS_Store
 rosemary.egg-info/
 build/
@@ -17,4 +17,3 @@ nginx.prod.ssl.conf
 entrypoint.sh
 deployments.log
 test_file.txt
-*.log
