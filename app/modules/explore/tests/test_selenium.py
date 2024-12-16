@@ -104,7 +104,7 @@ def test_size():
     try:
         host = get_host_for_selenium_testing()
         driver.get(f'{host}/explore')
-        time.sleep(4)
+        time.sleep(10)
 
         dropdown = driver.find_element(By.ID, "size")
         driver.execute_script("arguments[0].value = 'Between 1KB and 2KB';", dropdown)
