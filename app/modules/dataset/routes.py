@@ -31,7 +31,7 @@ from app.modules.dataset.services import (
     DataSetService,
     DOIMappingService,
 )
-from app.modules.zenodo.services import ZenodoService
+from app.modules.fakenodo.services import FakenodoService
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 dataset_service = DataSetService()
 author_service = AuthorService()
 dsmetadata_service = DSMetaDataService()
-zenodo_service = ZenodoService()
+zenodo_service = FakenodoService()
 doi_mapping_service = DOIMappingService()
 ds_view_record_service = DSViewRecordService()
 
@@ -63,7 +63,10 @@ def create_dataset():
             logger.exception(f"Exception while create dataset data in local {exc}")
             return jsonify({"Exception while create dataset data in local: ": str(exc)}), 400
 
-        # send dataset as deposition to Zenodo
+        if form.dataset_doi._value() == "":
+            logger.info("Dataset DOI field was left blank - untracking dataset...")
+            dataset_service.update_dsmetadata(dataset.id, dataset_doi=None)
+            # send dataset as deposition to Zenodo
         data = {}
         try:
             zenodo_response_json = zenodo_service.create_new_deposition(dataset)
