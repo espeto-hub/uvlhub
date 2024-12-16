@@ -16,6 +16,7 @@ chico sundermann">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="shortcut icon" href="{{ url_for("static", filename="img/icons/icon-250x250.png") }}"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.css">
 
     <link rel="canonical" href="https://www.uvlhub.io"/>
 
@@ -26,6 +27,9 @@ chico sundermann">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css"/>
 
@@ -121,6 +125,13 @@ chico sundermann">
                         </a>
                     </li>
 
+                    <li class="sidebar-item {{ 'active' if request.endpoint == 'bot.list_bots' else '' }}">
+                        <a class="sidebar-link" href="{{ url_for('bot.list_bots') }}">
+                            <i class="align-middle" data-feather="radio"></i> <span
+                                class="align-middle">My bots</span>
+                        </a>
+                    </li>
+
                     <li class="sidebar-item">
                         <a class="sidebar-link" href="{{ url_for('auth.logout') }}">
                             <i class="align-middle" data-feather="log-out"></i> <span
@@ -184,6 +195,8 @@ chico sundermann">
                         <div class="dropdown-menu dropdown-menu-end">
                             <a class="dropdown-item" href="{{ url_for('profile.my_profile') }}">
                                 <i class="align-middle me-1" data-feather="user"></i> My profile</a>
+                            <a class="dropdown-item" href="{{ url_for('bot.list_bots') }}">
+                                <i class="align-middle me-1" data-feather="radio"></i> My bots</a>
                             <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                                 <i class="align-middle me-1" data-feather="log-out"></i> Log out</a>
                         </div>

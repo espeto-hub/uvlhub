@@ -1,7 +1,19 @@
 import pytest
+from faker import Faker
 
 from app import create_app, db
 from app.modules.auth.models import User
+from core.faker.faker import RegexProvider
+
+# Create a Faker instance
+faker = Faker()
+faker.add_provider(RegexProvider)
+faker.status = 'test'
+
+
+@pytest.fixture(scope='session', name='faker')
+def faker_fixture():
+    return faker
 
 
 @pytest.fixture(scope='session')
@@ -34,6 +46,7 @@ def test_client(test_app):
             print("Rutas registradas:")
             for rule in test_app.url_map.iter_rules():
                 print(rule)
+
             yield testing_client
 
             db.session.remove()

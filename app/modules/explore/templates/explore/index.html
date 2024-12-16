@@ -44,23 +44,19 @@
                 <div class="col-12">
 
                     <div class="row">
-
                         <div class="col-12">
                             <div class="mb-3">
                                 <label class="form-label" for="query">
                                     Search for datasets by title, description, authors, tags, UVL files...
                                 </label>
-                                <input class="form-control" id="query" name="query" required="" type="text"
-                                       value="" autofocus>
+                                <input class="form-control" id="query" name="query" required="" type="text" value="" autofocus>
                             </div>
                         </div>
-
+                    
                         <div class="col-lg-6">
                             <div class="mb-3">
-                                <label class="form-label" for="publication_type">Filter by publication
-                                    type</label>
-                                <select class="form-control" id="publication_type" name="publication_type"
-                                        required="">
+                                <label class="form-label" for="publication_type">Filter by publication type</label>
+                                <select class="form-control" id="publication_type" name="publication_type" required="">
                                     <option value="any">Any</option>
                                     <option value="none">None</option>
                                     <option value="annotationcollection">Annotation Collection</option>
@@ -83,17 +79,78 @@
                                     <option value="other">Other</option>
                                 </select>
                             </div>
+                        </div>
+                    
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="authors">Filter by author</label>
+                                <select class="form-control" id="authors" name="authors" required="">
+                                    <option value="any">Any</option>
+                                </select>
+                            </div>
+                        </div>
 
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="files">Filter by files number</label>
+                                <select class="form-control" id="files" name="files" required="">
+                                    <option value="any">Any</option>
+                                    <option value="1file">1 File</option>
+                                    <option value="2files">2 Files</option>
+                                    <option value="3files">3 Files</option>
+                                    <option value="4files">4 Files</option>
+                                    <option value="5files">5 Files</option>
+                                    <option value="6files">6 Files</option>
+                                    <option value="7files">7 Files</option>
+                                    <option value="8files">8 Files</option>
+                                    <option value="9files">9 File</option>
+                                    <option value="moreThan10files">More than 10 files</option>
+                                </select>
+                            </div>
+                        </div>
+                    
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="size">Filter by total size</label>
+                                <select class="form-control" id="size" name="size" required="">
+                                    <option value="any">Any</option>
+                                    <option value="lessThan1KB">Less than 1KB</option>
+                                    <option value="between1KBand2KB">Between 1KB and 2KB</option>
+                                    <option value="between2KBand3KB">Between 2KB and 3KB</option>
+                                    <option value="between3KBand4KB">Between 3KB and 4KB</option>
+                                    <option value="between4KBand5KB">Between 4KB and 5KB</option>
+                                    <option value="moreThan5KB">More than 5KB</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="title">Filter by title</label>
+                                <select class="form-control" id="title" name="title" required="">
+                                    <option value="any">Any</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="tag">Filter by tag</label>
+                                <select class="form-control" id="tag" name="tag " required="">
+                                    <option value="any">Any</option>
+                                </select>
+                            </div>
                         </div>
 
                     </div>
+                    
 
                     <div class="row">
 
                         <div class="col-6">
 
                             <div>
-                                Sort results by creation date
+                                Sort by creation date
                                 <label class="form-check">
                                     <input class="form-check-input" type="radio" value="newest" name="sorting"
                                            checked="">
