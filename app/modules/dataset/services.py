@@ -9,8 +9,9 @@ from zipfile import ZipFile
 
 from flask import request
 
+from sqlalchemy.exc import IntegrityError
 from app.modules.auth.services import AuthenticationService
-from app.modules.dataset.models import DSViewRecord, DataSet, DSMetaData
+from app.modules.dataset.models import DSViewRecord, DataSet, DSMetaData, Rating
 from app.modules.dataset.repositories import (
     AuthorRepository,
     DOIMappingRepository,
@@ -257,3 +258,42 @@ class SizeService:
             return f'{round(size / (1024 ** 2), 2)} MB'
         else:
             return f'{round(size / (1024 ** 3), 2)} GB'
+
+
+class RatingService:
+    def __init__(self, db_session):
+        self.db = db_session
+
+    def save_rating(self, dataset_id: int, user_id: int, score: int):
+        """Guarda una nueva calificación o actualiza una existente."""
+
+        # Verificar si el dataset y el usuario existen
+        dataset = self.db.query(DataSet).filter_by(id=dataset_id).first()
+        if not dataset:
+            raise ValueError("Dataset no encontrado")
+
+        # Verificar si el usuario ya ha calificado este dataset
+        existing_rating = self.db.query(Rating).filter_by(dataset_id=dataset_id, user_id=user_id).first()
+        if existing_rating:
+            # Si ya existe una calificación, podemos actualizarla si lo deseamos
+            existing_rating.score = score
+        else:
+            # Si no existe, creamos una nueva calificación
+            new_rating = Rating(score=score, dataset_id=dataset_id, user_id=user_id)
+            self.db.add(new_rating)
+
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise
+
+    def get_average_rating(self, dataset_id: int) -> float:
+        """Obtiene el promedio de las calificaciones de un dataset."""
+
+        ratings = self.db.query(Rating.score).filter_by(dataset_id=dataset_id).all()
+        if not ratings:
+            return 0.0  # Si no hay calificaciones, devolver 0
+
+        # Calcular el promedio
+        return sum(r[0] for r in ratings) / len(ratings)
