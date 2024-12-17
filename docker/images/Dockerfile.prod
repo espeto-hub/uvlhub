@@ -4,9 +4,6 @@ FROM python:3.12-slim
 # Add an argument for version tag
 ARG VERSION_TAG
 
-# Add an argument for module ignore
-ARG MODULE_IGNORE
-
 # Install necessary packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends mariadb-client \
@@ -36,7 +33,7 @@ RUN pip install -r requirements.txt
 RUN echo $VERSION_TAG > /app/.version
 
 # Create the .moduleignore file with the content of MODULE_IGNORE
-RUN echo $MODULE_IGNORE > /app/.moduleignore
+RUN echo "webhook" > /app/.moduleignore
 
 # Copy the scripts directory and set execution permissions
 COPY --chmod=0755 scripts/ ./scripts/
