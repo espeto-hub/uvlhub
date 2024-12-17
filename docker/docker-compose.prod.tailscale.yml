@@ -11,12 +11,7 @@ services:
       - tailscale
     restart: always
     volumes:
-      - ./entrypoints/production_entrypoint.sh:/app/entrypoint.sh
-      - ../scripts:/app/scripts
-      - ../migrations:/app/migrations
       - ../uploads:/app/uploads
-      - ../.moduleignore:/app/.moduleignore
-    command: [ "sh", "-c", "sh /app/entrypoint.sh" ]
 
   db:
     container_name: mariadb_container
