@@ -25,7 +25,7 @@ Faker==26.0.0
 flake8==7.1.0
 flamapy==2.0.0.dev1
 flamapy-bdd==2.0.0.dev1
-flamapy-fm==2.0.0.dev1
+flamapy-fm==2.0.1
 flamapy-fw==2.0.0.dev1
 flamapy-sat==2.0.0.dev1
 Flask==3.0.3
